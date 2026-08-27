@@ -52,7 +52,11 @@ jobs:
       # npmRebuild: true (electron-builder.yml) also re-verifies at pack time.
       - run: npm ci
 
-      - run: npm run ${{ matrix.dist-script }}
+      # electron-builder auto-detects CI + a version-looking git tag and
+      # tries to publish itself, which fails without a GH_TOKEN — publishing
+      # is handled below by softprops/action-gh-release instead, so turn
+      # electron-builder's own publish step off explicitly.
+      - run: npm run ${{ matrix.dist-script }} -- --publish never
 
       - uses: actions/upload-artifact@v4
         with:
