@@ -5,6 +5,9 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: write
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -56,3 +59,18 @@ jobs:
           name: ${{ matrix.artifact-name }}
           path: ${{ matrix.artifact-glob }}
           if-no-files-found: error
+
+      # Each matrix leg uploads its own asset to the same tag's Release —
+      # softprops/action-gh-release upserts the release rather than failing
+      # when it's called again for a tag that already has one, so the two
+      # parallel legs end up contributing one asset each to a single Release.
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: ${{ matrix.artifact-glob }}
+          # Tags with a pre-release suffix (v1.0.0-rc1, v1.0.0-beta) are
+          # published as GitHub pre-releases; plain vX.Y.Z tags are full
+          # releases.
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
