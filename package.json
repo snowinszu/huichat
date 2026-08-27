@@ -1,7 +1,7 @@
 {
   "name": "huichat",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "会聊 — AI 聊天辅助助手（Electron 桌面应用）",
   "main": "dist-electron/main/index.js",
   "engines": {
