@@ -26,7 +26,7 @@ npm run dev
 - `npm run dist:mac` 必须在 macOS 主机上执行
 - `npm run dist:win` 必须在 Windows 主机上执行
 
-本期没有配置 Windows 交叉编译或 CI，需要生成 Windows 安装包时请在一台 Windows 电脑（或虚拟机）上克隆本仓库并执行 `npm run dist:win`。
+本地没有配置 Windows 交叉编译，需要在本机生成 Windows 安装包时请在一台 Windows 电脑（或虚拟机）上克隆本仓库并执行 `npm run dist:win`。如果只是想拿到一个正式的 Windows 安装包，不需要本机操作——见下方「发布新版本」，GitHub Actions 会在云端 Windows 主机上自动构建。
 
 ### 系统版本要求
 
@@ -50,9 +50,30 @@ npm run dev
 3. 首次启动会被 Gatekeeper 拦截（因为未签名，见上一节）——右键点"打开"确认允许运行
 4. 确认主界面正常渲染，创建一张模型卡片或发一条消息，确认数据写入正常（无原生模块加载报错）
 
-**Windows（`npm run dist:win` 后，`[Assumption]`：团队暂无 Windows CI runner，以下为手动验证步骤，非自动化 CI 用例）：**
+**Windows（`npm run dist:win` 后，本机手动验证步骤——通过 GitHub Actions 发布的安装包同样适用这套验证方式）：**
 
 1. 在 Windows 主机上运行 `npm run dist:win`，确认命令以退出码 0 结束，`release/` 下生成 `会聊 Setup <version>.exe`
 2. 双击运行安装向导，走完安装流程
 3. 首次启动可能被 Windows SmartScreen 拦截（因为未签名）——点"更多信息" → "仍要运行"
 4. 确认主界面正常渲染，创建一张模型卡片或发一条消息，确认数据写入正常（无原生模块加载报错）
+
+## 发布新版本
+
+正式发布走 GitHub Actions 自动构建，不需要本机手动执行 `dist:mac` / `dist:win`。
+
+1. **更新版本号**：修改 `package.json` 中的 `version` 字段（如 `1.0.0`），提交并推送到 `main`
+   ```bash
+   git add package.json
+   git commit -m "Bump version to 1.0.0"
+   git push origin main
+   ```
+2. **打 tag 并推送**：tag 名称必须是 `v` + 版本号，与 `package.json` 的 `version` 保持一致（两者目前没有自动校验，需要手动对齐）
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+   - 正式版用 `v1.0.0` 这种不带 `-` 的 tag，发布为正式 Release
+   - 预发布/测试版用 `v1.0.0-rc1`、`v1.0.0-beta` 这种带 `-` 后缀的 tag，会自动标记为 pre-release
+3. **等待自动构建**：推送 tag 后触发 `.github/workflows/release.yml`——依次跑 typecheck/lint 检查，再并行构建 macOS `.dmg` 与 Windows 安装包，全部成功后自动创建 GitHub Release 并附加两个安装包。进度见 [Actions](https://github.com/snowinszu/huichat/actions)，完成后去 [Releases](https://github.com/snowinszu/huichat/releases) 下载。
+
+日常 push 到 `main` 或提交 PR 只会触发 `.github/workflows/ci.yml` 的 typecheck + lint 检查，不会打包、不会发布。
