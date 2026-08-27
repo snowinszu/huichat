@@ -1,0 +1,110 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--fg-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hint {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.required {
+  color: var(--danger);
+  margin-left: 2px;
+}
+
+.control {
+  font-family: var(--font);
+  font-size: var(--text-md);
+  color: var(--fg);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 13px;
+  outline: none;
+  width: 100%;
+  transition:
+    border-color var(--duration-base) var(--ease),
+    box-shadow var(--duration-base) var(--ease);
+}
+
+.control::placeholder {
+  color: var(--muted);
+}
+
+.control:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px oklch(68% 0.15 280 / 0.13);
+}
+
+.control.hasError {
+  border-color: var(--danger);
+}
+.control.hasError:focus {
+  box-shadow: 0 0 0 3px oklch(56% 0.2 25 / 0.12);
+}
+
+.control:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+.passwordWrap {
+  position: relative;
+}
+
+.passwordControl {
+  padding-right: 44px;
+}
+
+.showHideBtn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color var(--duration-fast) var(--ease);
+}
+
+.showHideBtn:hover {
+  color: var(--fg-2);
+}
+
+.showHideBtn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.errorLabel {
+  font-size: var(--text-sm);
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

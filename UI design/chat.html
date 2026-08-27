@@ -1,0 +1,1083 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1280" />
+  <title>会聊 — 和小雅聊天</title>
+  <style>
+    :root {
+      --accent: oklch(56% 0.22 282);
+      --accent-hover: oklch(52% 0.22 282);
+      --accent-subtle: oklch(95% 0.06 280);
+      --accent-fg: #fff;
+      --bg: oklch(97% 0.008 275);
+      --surface: #fff;
+      --surface-2: oklch(98.5% 0.005 275);
+      --fg: oklch(18% 0.025 270);
+      --fg-2: oklch(38% 0.020 270);
+      --muted: oklch(55% 0.015 270);
+      --border: oklch(88% 0.012 275);
+      --border-focus: oklch(68% 0.15 280);
+      --danger: oklch(56% 0.20 25);
+      --danger-light: oklch(96% 0.05 25);
+      --success: oklch(58% 0.16 150);
+      --success-light: oklch(95% 0.05 150);
+      --bubble-them: oklch(95% 0.008 270);
+      --bubble-them-fg: oklch(22% 0.022 270);
+      --bubble-me: oklch(56% 0.22 282);
+      --bubble-me-fg: #fff;
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-xl: 20px;
+      --r-pill: 999px;
+      --shadow-sm: 0 1px 4px oklch(18% 0.025 270 / 0.06);
+      --shadow-md: 0 4px 16px oklch(18% 0.025 270 / 0.10);
+      --shadow-lg: 0 8px 32px oklch(18% 0.025 270 / 0.15);
+      --font: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── App shell: fixed top + scrollable middle + fixed bottom ── */
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 20;
+    }
+    .back-btn {
+      width: 34px; height: 34px;
+      border-radius: var(--r-sm);
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, color 0.12s;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .back-btn:hover { background: var(--bg); color: var(--fg); }
+
+    .topbar-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, oklch(68% 0.20 300), oklch(56% 0.22 282));
+    }
+    .topbar-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .topbar-name { font-size: 15px; font-weight: 700; }
+
+    .goal-tags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+    .goal-tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-pill);
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--fg-2);
+      cursor: pointer;
+      transition: border-color 0.12s;
+      max-width: 200px;
+    }
+    .goal-tag:hover { border-color: var(--border-focus); }
+    .goal-tag-label {
+      color: var(--muted);
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    .goal-tag-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .goal-tag-input {
+      background: none;
+      border: none;
+      outline: none;
+      font-family: var(--font);
+      font-size: 12px;
+      color: var(--fg);
+      width: 120px;
+      min-width: 60px;
+    }
+
+    /* ── History area ── */
+    .history {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .history::-webkit-scrollbar { width: 4px; }
+    .history::-webkit-scrollbar-track { background: transparent; }
+    .history::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Date divider */
+    .date-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .date-divider::before, .date-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .date-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+    /* Message rows */
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      max-width: 72%;
+      margin-bottom: 4px;
+    }
+    .msg-row.them { align-self: flex-start; }
+    .msg-row.me { align-self: flex-end; flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      align-self: flex-end;
+    }
+    .msg-content { display: flex; flex-direction: column; gap: 4px; }
+
+    /* Bubble */
+    .bubble {
+      padding: 11px 15px;
+      border-radius: var(--r-lg);
+      font-size: 14px;
+      line-height: 1.65;
+      word-break: break-word;
+    }
+    .bubble.them {
+      background: var(--bubble-them);
+      color: var(--bubble-them-fg);
+      border-bottom-left-radius: 4px;
+    }
+    .bubble.me {
+      background: var(--bubble-me);
+      color: var(--bubble-me-fg);
+      border-bottom-right-radius: 4px;
+    }
+
+    /* Translation card */
+    .translation-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 8px 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--fg-2);
+      line-height: 1.5;
+    }
+    .translation-tag {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-subtle);
+      padding: 1px 5px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Annotation bubble */
+    .annotation-row {
+      align-self: center;
+      max-width: 60%;
+      margin: 8px 0;
+    }
+    .annotation-bubble {
+      background: var(--surface);
+      border: 1.5px dashed oklch(80% 0.10 280);
+      border-radius: var(--r-lg);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--fg-2);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.5;
+    }
+    .annotation-type {
+      font-size: 10px;
+      font-weight: 700;
+      color: oklch(58% 0.16 280);
+      background: oklch(93% 0.07 280);
+      padding: 2px 6px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .msg-time {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      padding: 0 2px;
+    }
+
+    /* ── Bottom panel ── */
+    .bottom-panel {
+      background: var(--surface);
+      border-top: 1.5px solid var(--border);
+      padding: 16px 20px 20px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Input row */
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .paste-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 10px 13px;
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--fg);
+      line-height: 1.55;
+      resize: none;
+      outline: none;
+      min-height: 42px;
+      max-height: 100px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .paste-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px oklch(68% 0.15 280 / 0.12);
+      background: var(--surface);
+    }
+    .paste-input::placeholder { color: var(--muted); }
+    .add-msg-btn {
+      height: 42px;
+      padding: 0 16px;
+      background: var(--accent-subtle);
+      color: var(--accent);
+      border: none;
+      border-radius: var(--r-md);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.12s;
+    }
+    .add-msg-btn:hover { background: oklch(90% 0.09 280); }
+
+    .annotation-toggle {
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      font-family: var(--font);
+      padding: 0;
+      transition: color 0.12s;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    .annotation-toggle:hover { color: var(--fg-2); }
+
+    /* Annotation expand */
+    .annotation-expand {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .annotation-expand.hidden { display: none; }
+    .ann-type-select {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--fg);
+      padding: 8px 10px;
+      outline: none;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .ann-meaning-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--fg);
+      padding: 8px 10px;
+      outline: none;
+      transition: border-color 0.12s;
+    }
+    .ann-meaning-input:focus { border-color: var(--border-focus); }
+    .ann-meaning-input::placeholder { color: var(--muted); }
+
+    /* Tone chips */
+    .tone-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tone-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      flex-shrink: 0;
+      margin-right: 2px;
+    }
+    .tone-chip {
+      padding: 5px 13px;
+      border-radius: var(--r-pill);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--fg-2);
+      transition: all 0.14s;
+      white-space: nowrap;
+    }
+    .tone-chip:hover { border-color: oklch(72% 0.12 280); color: var(--accent); background: var(--accent-subtle); }
+    .tone-chip.active {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px oklch(56% 0.22 282 / 0.28);
+    }
+
+    /* Generate button + results row */
+    .gen-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .gen-btn {
+      height: 44px;
+      padding: 0 24px;
+      background: var(--accent);
+      color: var(--accent-fg);
+      border: none;
+      border-radius: var(--r-md);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+      letter-spacing: -0.01em;
+    }
+    .gen-btn:hover { background: var(--accent-hover); box-shadow: 0 4px 16px oklch(56% 0.22 282 / 0.32); }
+    .gen-btn:active { transform: scale(0.98); }
+    .gen-btn.loading { opacity: 0.75; pointer-events: none; }
+
+    /* Reply cards area */
+    .reply-area {
+      flex: 1;
+      min-width: 0;
+    }
+    .reply-cards-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .reply-header-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .regen-btn {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity 0.12s;
+    }
+    .regen-btn:hover { opacity: 0.7; }
+
+    .reply-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .reply-card {
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 12px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      transition: border-color 0.14s, box-shadow 0.14s;
+    }
+    .reply-card:hover { border-color: oklch(75% 0.12 280); box-shadow: var(--shadow-sm); }
+    .reply-text {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--fg);
+      flex: 1;
+    }
+    .reply-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .reply-tag {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-subtle);
+      border: none;
+      border-radius: var(--r-sm);
+      padding: 4px 10px;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background 0.12s, color 0.12s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .copy-btn:hover { background: oklch(88% 0.12 280); }
+    .copy-btn.copied {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    /* Skeleton loading */
+    .skeleton-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .skeleton-card {
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .skel-line {
+      height: 10px;
+      border-radius: 5px;
+      background: linear-gradient(90deg, var(--border) 25%, oklch(92% 0.008 275) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* Error state */
+    .error-card {
+      background: var(--danger-light);
+      border: 1.5px solid oklch(85% 0.08 25);
+      border-radius: var(--r-md);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--danger);
+    }
+    .error-card-text { font-size: 13px; flex: 1; }
+    .retry-btn {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--danger);
+      border: 1.5px solid oklch(75% 0.14 25);
+      background: none;
+      border-radius: var(--r-sm);
+      padding: 6px 12px;
+      cursor: pointer;
+      font-family: var(--font);
+      white-space: nowrap;
+      transition: background 0.12s;
+    }
+    .retry-btn:hover { background: oklch(92% 0.06 25); }
+
+    /* Polish section */
+    .polish-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 2px;
+      border-top: 1px solid var(--border);
+    }
+    .polish-label {
+      font-size: 12px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .polish-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 8px 12px;
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--fg);
+      outline: none;
+      transition: border-color 0.12s;
+    }
+    .polish-input:focus { border-color: var(--border-focus); background: var(--surface); }
+    .polish-input::placeholder { color: var(--muted); }
+    .polish-btn {
+      height: 36px;
+      padding: 0 14px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg-2);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: border-color 0.12s, color 0.12s;
+    }
+    .polish-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Polished result card */
+    .polished-result {
+      background: var(--surface-2);
+      border: 1.5px solid oklch(82% 0.12 282);
+      border-radius: var(--r-md);
+      padding: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--fg);
+      line-height: 1.65;
+    }
+    .polished-result .copy-btn { flex-shrink: 0; }
+
+    /* Reply translation — shown inside reply cards when message is non-Chinese */
+    .reply-translation {
+      display: flex;
+      align-items: flex-start;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--fg-2);
+      line-height: 1.5;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+      margin-top: 2px;
+    }
+    .reply-translation-tag {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-subtle);
+      padding: 1px 5px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .reply-lang-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: var(--r-pill);
+      letter-spacing: 0.02em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-shell">
+
+    <!-- Top bar -->
+    <div class="topbar">
+      <a class="back-btn" href="home.html">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </a>
+      <div class="topbar-avatar">雅</div>
+      <div class="topbar-info">
+        <div class="topbar-name">小雅</div>
+      </div>
+      <div class="goal-tags">
+        <div class="goal-tag" title="点击编辑长期目标">
+          <span class="goal-tag-label">目标</span>
+          <span class="goal-tag-text">发展成恋爱关系</span>
+        </div>
+        <div class="goal-tag" title="点击编辑本次短期目标">
+          <span class="goal-tag-label">今天</span>
+          <input class="goal-tag-input" placeholder="设定本次短期目标…" value="约周五晚上见面" />
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="history" id="history">
+
+      <div class="date-divider"><span class="date-label">今天</span></div>
+
+      <!-- Their message 1 -->
+      <div class="msg-row them">
+        <div class="msg-avatar" style="background: linear-gradient(135deg, oklch(68% 0.20 300), oklch(56% 0.22 282));">雅</div>
+        <div class="msg-content">
+          <div class="bubble them">好啊，那就周五晚上见？我已经查了一家评价不错的日料店，你喜欢吃日料吗？</div>
+          <div class="msg-time">14:23</div>
+        </div>
+      </div>
+
+      <!-- My reply -->
+      <div class="msg-row me">
+        <div class="msg-content">
+          <div class="bubble me">喜欢！而且你主动查好了…好期待哦</div>
+          <div class="msg-time">14:25</div>
+        </div>
+      </div>
+
+      <!-- Their message 2 - English with translation -->
+      <div class="msg-row them">
+        <div class="msg-avatar" style="background: linear-gradient(135deg, oklch(68% 0.20 300), oklch(56% 0.22 282));">雅</div>
+        <div class="msg-content">
+          <div class="bubble them">Haha I just saw it on Xiaohongshu, looks really aesthetic ✨</div>
+          <div class="translation-card">
+            <span class="translation-tag">译</span>
+            <span>哈哈我在小红书看到的，感觉颜值挺高的 ✨</span>
+          </div>
+          <div class="msg-time">14:26</div>
+        </div>
+      </div>
+
+      <!-- Annotation bubble (emoji/image) -->
+      <div class="annotation-row">
+        <div class="annotation-bubble">
+          <span class="annotation-type">表情包</span>
+          <span>一只小猫从被窝里探头，表情是又困又期待的样子，通常表示"好期待但是好困"</span>
+        </div>
+      </div>
+
+      <!-- Their message 3 -->
+      <div class="msg-row them">
+        <div class="msg-avatar" style="background: linear-gradient(135deg, oklch(68% 0.20 300), oklch(56% 0.22 282));">雅</div>
+        <div class="msg-content">
+          <div class="bubble them">对了，你对食材有没有忌口的？我去跟店里说一声</div>
+          <div class="msg-time">14:31</div>
+        </div>
+      </div>
+
+      <!-- My reply -->
+      <div class="msg-row me">
+        <div class="msg-content">
+          <div class="bubble me">没有忌口，什么都吃 :) 你真的想很周到</div>
+          <div class="msg-time">14:33</div>
+        </div>
+      </div>
+
+      <!-- Their latest message -->
+      <div class="msg-row them">
+        <div class="msg-avatar" style="background: linear-gradient(135deg, oklch(68% 0.20 300), oklch(56% 0.22 282));">雅</div>
+        <div class="msg-content">
+          <div class="bubble them">那就说好了！哦对，我上次说去看那个展你有没有兴趣？展期到下周日</div>
+          <div class="msg-time">14:47</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom panel -->
+    <div class="bottom-panel">
+
+      <!-- Paste + add annotation -->
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div class="input-row">
+          <textarea
+            class="paste-input"
+            id="paste-input"
+            placeholder="粘贴对方发来的消息…"
+            rows="1"
+            oninput="autoResize(this)"
+          >Haha I just saw it on Xiaohongshu, looks really aesthetic ✨</textarea>
+          <button class="add-msg-btn" onclick="addMessage()">添加消息</button>
+          <button class="annotation-toggle" onclick="toggleAnnotation()">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M12 8v8"/></svg>
+            图片 / 表情说明
+          </button>
+        </div>
+        <!-- Annotation expand -->
+        <div class="annotation-expand hidden" id="annotation-expand">
+          <select class="ann-type-select">
+            <option>表情包</option>
+            <option>图片</option>
+            <option>贴纸</option>
+            <option>语音</option>
+          </select>
+          <input class="ann-meaning-input" placeholder="描述内容的含义，比如：一只猫从被窝里探头，表达期待又困倦的状态…" />
+          <button class="add-msg-btn" style="height:38px; font-size:12px;">添加</button>
+        </div>
+      </div>
+
+      <!-- Tone chips -->
+      <div class="tone-row">
+        <span class="tone-label">语气：</span>
+        <button class="tone-chip" onclick="selectTone(this)">礼貌</button>
+        <button class="tone-chip" onclick="selectTone(this)">幽默</button>
+        <button class="tone-chip active" onclick="selectTone(this)">暧昧</button>
+        <button class="tone-chip" onclick="selectTone(this)">真诚</button>
+        <button class="tone-chip" onclick="selectTone(this)">撒娇</button>
+        <button class="tone-chip" onclick="selectTone(this)">高冷</button>
+        <button class="tone-chip" onclick="selectTone(this)">简洁直接</button>
+        <button class="tone-chip" onclick="selectTone(this)">安慰共情</button>
+      </div>
+
+      <!-- Generate + reply cards -->
+      <div class="gen-row">
+        <button class="gen-btn" id="gen-btn" onclick="generate()">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          生成回复
+        </button>
+
+        <div class="reply-area" id="reply-area">
+          <!-- Reply cards (default state) -->
+          <div id="reply-cards-wrap">
+            <div class="reply-cards-header">
+              <span class="reply-header-label" id="reply-header-label">候选回复（英文）· 暧昧语气</span>
+              <button class="regen-btn" onclick="generate()">
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                重新生成
+              </button>
+            </div>
+            <div class="reply-cards" id="reply-cards">
+              <div class="reply-card">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                  <span class="reply-lang-badge">EN</span>
+                </div>
+                <div class="reply-text">Haha same, I love the vibe! The aesthetic looks amazing on the photos.</div>
+                <div class="reply-translation">
+                  <span class="reply-translation-tag">译</span>
+                  <span>哈哈我也这样觉得，感觉颜值超高！照片看起来真的很美。</span>
+                </div>
+                <div class="reply-card-footer">
+                  <span class="reply-tag">选项 1</span>
+                  <button class="copy-btn" onclick="copyReply(this, 'Haha same, I love the vibe! The aesthetic looks amazing on the photos.')">
+                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    复制
+                  </button>
+                </div>
+              </div>
+              <div class="reply-card">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                  <span class="reply-lang-badge">EN</span>
+                </div>
+                <div class="reply-text">Wow you found it on Xiaohongshu? You always know the good spots 😊</div>
+                <div class="reply-translation">
+                  <span class="reply-translation-tag">译</span>
+                  <span>哇你在小红书发现的？你总是知道哪里好 😊</span>
+                </div>
+                <div class="reply-card-footer">
+                  <span class="reply-tag">选项 2</span>
+                  <button class="copy-btn" onclick="copyReply(this, 'Wow you found it on Xiaohongshu? You always know the good spots 😊')">
+                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    复制
+                  </button>
+                </div>
+              </div>
+              <div class="reply-card">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                  <span class="reply-lang-badge">EN</span>
+                </div>
+                <div class="reply-text">It does look really good! Can't wait to see it in person with you.</div>
+                <div class="reply-translation">
+                  <span class="reply-translation-tag">译</span>
+                  <span>看起来真的很棒！好期待和你一起去实地感受。</span>
+                </div>
+                <div class="reply-card-footer">
+                  <span class="reply-tag">选项 3</span>
+                  <button class="copy-btn" onclick="copyReply(this, 'It does look really good! Can\'t wait to see it in person with you.')">
+                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    复制
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skeleton (hidden) -->
+          <div class="skeleton-cards" id="skeleton-wrap" style="display:none;">
+            <div class="skeleton-card">
+              <div class="skel-line" style="width:90%"></div>
+              <div class="skel-line" style="width:75%"></div>
+              <div class="skel-line" style="width:55%"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skel-line" style="width:85%"></div>
+              <div class="skel-line" style="width:70%"></div>
+              <div class="skel-line" style="width:60%"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skel-line" style="width:80%"></div>
+              <div class="skel-line" style="width:65%"></div>
+              <div class="skel-line" style="width:50%"></div>
+            </div>
+          </div>
+
+          <!-- Error card (hidden) -->
+          <div class="error-card" id="error-card" style="display:none;">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span class="error-card-text">生成失败，请检查 API 配置后重试</span>
+            <button class="retry-btn" onclick="generate()">重试</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Polish row -->
+      <div class="polish-row">
+        <span class="polish-label">我想表达…</span>
+        <input type="text" class="polish-input" placeholder="用自己的话说出想法，AI 帮你打磨成合适的表达" />
+        <button class="polish-btn" onclick="polish()">润色</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+    }
+
+    // Init textarea size
+    const ta = document.getElementById('paste-input');
+    if (ta) { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 100) + 'px'; }
+
+    function selectTone(chip) {
+      document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    }
+
+    // Detect if text is primarily non-Chinese (< 20% Chinese characters)
+    function isNonChinese(text) {
+      const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+      const totalChars = text.replace(/\s/g, '').length;
+      return totalChars > 0 && chineseChars / totalChars < 0.2;
+    }
+
+    // Get the active tone chip label
+    function getActiveTone() {
+      const chip = document.querySelector('.tone-chip.active');
+      return chip ? chip.textContent : '暧昧';
+    }
+
+    function makeCopyIcon() {
+      return '<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    }
+
+    // Build a reply card element
+    function buildReplyCard(index, replyText, translationText) {
+      const card = document.createElement('div');
+      card.className = 'reply-card';
+      const safeReply = replyText.replace(/'/g, "\\'");
+      card.innerHTML = `
+        ${translationText ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span class="reply-lang-badge">EN</span></div>` : ''}
+        <div class="reply-text">${replyText}</div>
+        ${translationText ? `<div class="reply-translation"><span class="reply-translation-tag">译</span><span>${translationText}</span></div>` : ''}
+        <div class="reply-card-footer">
+          <span class="reply-tag">选项 ${index}</span>
+          <button class="copy-btn" onclick="copyReply(this, '${safeReply}')">
+            ${makeCopyIcon()} 复制
+          </button>
+        </div>`;
+      return card;
+    }
+
+    // Demo reply sets by language
+    const chineseReplies = [
+      { text: '哇，你还记得上次说的展！当然有兴趣，和你一起去更有意思。', translation: null },
+      { text: '有兴趣！而且感觉看展完再吃饭，周五这一天排得刚刚好。', translation: null },
+      { text: '你提这个我就知道你一直有想去，走，我陪你。不过下周日截止，要去得早点订票。', translation: null },
+    ];
+    const englishReplies = [
+      { text: 'Haha same, I love the vibe! The aesthetic looks amazing on the photos.', translation: '哈哈我也这样觉得，感觉颜值超高！照片看起来真的很美。' },
+      { text: 'Wow you found it on Xiaohongshu? You always know the good spots 😊', translation: '哇你在小红书发现的？你总是知道哪里好 😊' },
+      { text: "It does look really good! Can't wait to see it in person with you.", translation: '看起来真的很棒！好期待和你一起去实地感受。' },
+    ];
+
+    let genState = 'idle'; // idle | loading | error | done
+    function generate() {
+      genState = 'loading';
+      const btn = document.getElementById('gen-btn');
+      btn.classList.add('loading');
+      btn.innerHTML = '<div class="spinner"></div> 生成中…';
+
+      document.getElementById('reply-cards-wrap').style.display = 'none';
+      document.getElementById('skeleton-wrap').style.display = 'grid';
+      document.getElementById('error-card').style.display = 'none';
+
+      const inputText = document.getElementById('paste-input').value.trim();
+      const bilingual = isNonChinese(inputText);
+      const tone = getActiveTone();
+
+      setTimeout(() => {
+        btn.classList.remove('loading');
+        btn.innerHTML = '<svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>生成回复';
+        document.getElementById('skeleton-wrap').style.display = 'none';
+        document.getElementById('reply-cards-wrap').style.display = 'block';
+
+        // Update header label
+        const headerLabel = document.getElementById('reply-header-label');
+        headerLabel.textContent = bilingual
+          ? `候选回复（英文）· ${tone}语气`
+          : `候选回复 · ${tone}语气`;
+
+        // Re-render reply cards
+        const cardsContainer = document.getElementById('reply-cards');
+        cardsContainer.innerHTML = '';
+        const replies = bilingual ? englishReplies : chineseReplies;
+        replies.forEach((r, i) => {
+          cardsContainer.appendChild(buildReplyCard(i + 1, r.text, r.translation));
+        });
+
+        genState = 'done';
+      }, 1800);
+    }
+
+    function copyReply(btn, text) {
+      navigator.clipboard.writeText(text).catch(() => {});
+      btn.classList.add('copied');
+      btn.innerHTML = '<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>已复制';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = '<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制';
+      }, 2000);
+    }
+
+    function addMessage() {
+      const input = document.getElementById('paste-input');
+      const text = input.value.trim();
+      if (!text) return;
+      const history = document.getElementById('history');
+      const row = document.createElement('div');
+      row.className = 'msg-row them';
+      row.innerHTML = `
+        <div class="msg-avatar" style="background: linear-gradient(135deg, oklch(68% 0.20 300), oklch(56% 0.22 282));">雅</div>
+        <div class="msg-content">
+          <div class="bubble them">${text.replace(/</g,'&lt;')}</div>
+          <div class="msg-time">${new Date().toLocaleTimeString('zh', {hour:'2-digit',minute:'2-digit'})}</div>
+        </div>`;
+      history.appendChild(row);
+      history.scrollTop = history.scrollHeight;
+      input.value = '';
+      input.style.height = 'auto';
+    }
+
+    function toggleAnnotation() {
+      const el = document.getElementById('annotation-expand');
+      el.classList.toggle('hidden');
+    }
+
+    function polish() {
+      const input = document.querySelector('.polish-input');
+      if (!input.value.trim()) return;
+      input.value = '';
+      // In real app this would call AI
+    }
+  </script>
+</body>
+</html>

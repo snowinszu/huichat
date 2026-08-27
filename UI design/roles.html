@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1280" />
+  <title>会聊 — 我的角色</title>
+  <style>
+    :root {
+      --accent: oklch(56% 0.22 282);
+      --accent-hover: oklch(52% 0.22 282);
+      --accent-subtle: oklch(95% 0.06 280);
+      --accent-fg: #fff;
+      --bg: oklch(97% 0.008 275);
+      --surface: #fff;
+      --surface-2: oklch(98.5% 0.005 275);
+      --fg: oklch(18% 0.025 270);
+      --fg-2: oklch(38% 0.020 270);
+      --muted: oklch(55% 0.015 270);
+      --border: oklch(88% 0.012 275);
+      --border-focus: oklch(68% 0.15 280);
+      --danger: oklch(56% 0.20 25);
+      --danger-light: oklch(96% 0.05 25);
+      --danger-border: oklch(85% 0.08 25);
+      --warning: oklch(72% 0.18 60);
+      --warning-light: oklch(97% 0.06 70);
+      --warning-border: oklch(86% 0.10 70);
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-xl: 20px;
+      --r-pill: 999px;
+      --shadow-sm: 0 1px 4px oklch(18% 0.025 270 / 0.06);
+      --shadow-md: 0 4px 16px oklch(18% 0.025 270 / 0.10);
+      --shadow-lg: 0 8px 32px oklch(18% 0.025 270 / 0.15);
+      --font: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .titlebar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .back-btn {
+      width: 34px; height: 34px;
+      border-radius: var(--r-sm);
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, color 0.12s;
+      text-decoration: none;
+    }
+    .back-btn:hover { background: var(--bg); color: var(--fg); }
+    .page-title { font-size: 16px; font-weight: 700; flex: 1; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: var(--r-md);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.14s, box-shadow 0.14s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: var(--accent-fg); }
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 3px 12px oklch(56% 0.22 282 / 0.28); }
+    .btn-ghost { background: transparent; color: var(--fg-2); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: oklch(52% 0.20 25); }
+
+    .main { padding: 32px 24px; max-width: 800px; margin: 0 auto; }
+
+    /* Role list */
+    .role-list { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+
+    .role-item {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+    .role-item:hover { box-shadow: var(--shadow-sm); border-color: oklch(80% 0.10 280); }
+
+    .role-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .role-body { flex: 1; min-width: 0; }
+    .role-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+    .role-info {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .role-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .usage-badge {
+      font-size: 11px;
+      color: var(--accent);
+      background: var(--accent-subtle);
+      padding: 2px 7px;
+      border-radius: var(--r-pill);
+      font-weight: 500;
+    }
+    .usage-badge.none {
+      color: var(--muted);
+      background: var(--surface-2);
+    }
+
+    .role-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .action-btn {
+      width: 34px; height: 34px;
+      border-radius: var(--r-sm);
+      border: none;
+      background: var(--bg);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s, color 0.12s;
+    }
+    .action-btn:hover { background: oklch(92% 0.08 280); color: var(--accent); }
+    .action-btn.danger:hover { background: var(--danger-light); color: var(--danger); }
+    .action-btn svg { width: 16px; height: 16px; }
+
+    /* ── Modals ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: oklch(18% 0.025 270 / 0.45);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      width: 440px;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(12px);
+      transition: transform 0.2s;
+    }
+    .overlay.open .modal { transform: translateY(0); }
+
+    .modal-header {
+      padding: 22px 22px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title { font-size: 17px; font-weight: 700; }
+    .modal-close {
+      width: 30px; height: 30px;
+      border-radius: var(--r-sm);
+      border: none;
+      background: var(--bg);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .modal-close:hover { background: var(--border); color: var(--fg); }
+    .modal-body { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 16px; }
+    .modal-footer { padding: 14px 22px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 13px; font-weight: 600; color: var(--fg-2); }
+    .field-label .req { color: var(--danger); }
+    .field-input, .field-textarea {
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--fg);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 10px 12px;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field-input:focus, .field-textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px oklch(68% 0.15 280 / 0.13);
+    }
+    .field-input.error { border-color: var(--danger); }
+    .field-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+    .field-error { font-size: 12px; color: var(--danger); display: none; }
+    .field-error.show { display: block; }
+
+    /* Warning delete modal */
+    .warn-modal { width: 400px; }
+    .warn-header {
+      background: var(--warning-light);
+      border-bottom: 1px solid var(--warning-border);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-radius: var(--r-xl) var(--r-xl) 0 0;
+    }
+    .warn-icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: oklch(93% 0.10 65);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--warning);
+      flex-shrink: 0;
+    }
+    .warn-title { font-size: 15px; font-weight: 700; }
+    .warn-subtitle { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .warn-body { padding: 16px 20px; font-size: 14px; color: var(--fg-2); line-height: 1.65; }
+    .warn-body strong { color: var(--fg); font-weight: 600; }
+    .warn-footer { padding: 12px 20px 20px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); }
+    .warn-badge { display: inline-block; background: var(--warning-light); border: 1px solid var(--warning-border); border-radius: var(--r-sm); padding: 2px 8px; font-size: 12px; color: var(--warning); font-weight: 600; margin: 0 3px; }
+
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Empty state */
+    .empty { display: flex; flex-direction: column; align-items: center; padding: 60px 40px; text-align: center; }
+    .empty-title { font-size: 16px; font-weight: 600; color: var(--fg-2); margin-bottom: 6px; margin-top: 20px; }
+    .empty-sub { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 280px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+  <header class="titlebar">
+    <a class="back-btn" href="home.html">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </a>
+    <span class="page-title">我的角色</span>
+    <button class="btn btn-primary" onclick="openRoleModal()">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      新建角色
+    </button>
+  </header>
+
+  <main class="main">
+    <p style="font-size:13px; color:var(--muted); line-height:1.6;">
+      角色档案定义你在不同聊天场景下的身份和性格，选好后 AI 会以对应风格帮你回复。
+    </p>
+
+    <div class="role-list" id="role-list">
+
+      <div class="role-item">
+        <div class="role-avatar" style="background: linear-gradient(135deg, oklch(68% 0.20 282), oklch(56% 0.22 300));">我</div>
+        <div class="role-body">
+          <div class="role-name">真实的我</div>
+          <div class="role-info">25岁，产品经理，喜欢读书和骑行，平时话不多但很有想法，不喜欢虚伪客套</div>
+          <div class="role-meta">
+            <span class="usage-badge">被 2 个聊天对象使用</span>
+          </div>
+        </div>
+        <div class="role-actions">
+          <button class="action-btn" onclick="openRoleModal('真实的我')" title="编辑">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="action-btn danger" onclick="openWarnDelete('真实的我', 2)" title="删除">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="role-item">
+        <div class="role-avatar" style="background: linear-gradient(135deg, oklch(65% 0.18 210), oklch(55% 0.16 240));">友</div>
+        <div class="role-body">
+          <div class="role-name">随和的朋友</div>
+          <div class="role-info">轻松幽默，容易跟人打成一片，不设防，说话直接但懂得照顾对方情绪</div>
+          <div class="role-meta">
+            <span class="usage-badge">被 2 个聊天对象使用</span>
+          </div>
+        </div>
+        <div class="role-actions">
+          <button class="action-btn" onclick="openRoleModal('随和的朋友')" title="编辑">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="action-btn danger" onclick="openWarnDelete('随和的朋友', 2)" title="删除">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="role-item">
+        <div class="role-avatar" style="background: linear-gradient(135deg, oklch(62% 0.14 150), oklch(52% 0.16 170));">听</div>
+        <div class="role-body">
+          <div class="role-name">温柔倾听者</div>
+          <div class="role-info">擅长共情，回复时会先感受对方情绪再给建议，语气温和不带评判，适合敏感话题</div>
+          <div class="role-meta">
+            <span class="usage-badge none">暂未使用</span>
+          </div>
+        </div>
+        <div class="role-actions">
+          <button class="action-btn" onclick="openRoleModal('温柔倾听者')" title="编辑">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="action-btn danger" onclick="openDelete('温柔倾听者')" title="删除">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ── Role Edit Modal ── -->
+  <div class="overlay" id="role-overlay" onclick="if(event.target===this) closeModal('role-overlay')">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="role-modal-title">新建角色</span>
+        <button class="modal-close" onclick="closeModal('role-overlay')">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label class="field-label">角色名称 <span class="req">*</span></label>
+          <input type="text" id="role-name-input" class="field-input" placeholder="例如：真实的我、工作中的我、温柔的我" />
+          <span class="field-error" id="role-name-error">请填写角色名称</span>
+        </div>
+        <div class="field">
+          <label class="field-label">角色的基本信息</label>
+          <textarea id="role-info-input" class="field-textarea" placeholder="描述这个角色的性格、说话风格、背景等，越详细 AI 越能准确模拟。
+例如：话不多但说到点上，不喜欢虚伪，幽默但不爱搞怪，有点慢热但对朋友很真诚"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('role-overlay')">取消</button>
+        <button class="btn btn-primary" id="role-save-btn" onclick="saveRole()">保存角色</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Delete with warning (role is in use) ── -->
+  <div class="overlay" id="warn-overlay" onclick="if(event.target===this) closeModal('warn-overlay')">
+    <div class="modal warn-modal">
+      <div class="warn-header">
+        <div class="warn-icon">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="warn-title">该角色正在被使用</div>
+          <div class="warn-subtitle">删除前请注意以下影响</div>
+        </div>
+      </div>
+      <div class="warn-body">
+        角色 <strong id="warn-role-name">「真实的我」</strong> 当前被
+        <span class="warn-badge" id="warn-count">2</span> 个聊天对象引用。
+        <br><br>
+        删除后，这些聊天对象将失去角色关联，AI 生成回复时将没有角色参考依据。建议先去编辑对应的聊天对象，更换角色后再删除。
+        <br><br>
+        仍然要强制删除吗？
+      </div>
+      <div class="warn-footer">
+        <button class="btn btn-ghost" onclick="closeModal('warn-overlay')">取消</button>
+        <button class="btn btn-danger" onclick="closeModal('warn-overlay')">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Simple delete (role not in use) ── -->
+  <div class="overlay" id="delete-overlay" onclick="if(event.target===this) closeModal('delete-overlay')">
+    <div class="modal" style="width:360px;">
+      <div class="modal-header" style="padding-bottom:0;">
+        <span class="modal-title">删除角色</span>
+        <button class="modal-close" onclick="closeModal('delete-overlay')">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding-top:14px;">
+        <p style="font-size:14px; color:var(--fg-2); line-height:1.6;">确认删除角色「<strong id="simple-delete-name">温柔倾听者</strong>」？此操作无法撤销。</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('delete-overlay')">取消</button>
+        <button class="btn btn-danger" onclick="closeModal('delete-overlay')">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function openRoleModal(name) {
+      document.getElementById('role-modal-title').textContent = name ? `编辑角色 · ${name}` : '新建角色';
+      document.getElementById('role-name-input').value = name || '';
+      document.getElementById('role-name-error').classList.remove('show');
+      document.getElementById('role-name-input').classList.remove('error');
+      document.getElementById('role-overlay').classList.add('open');
+    }
+
+    function openWarnDelete(name, count) {
+      document.getElementById('warn-role-name').textContent = `「${name}」`;
+      document.getElementById('warn-count').textContent = count;
+      document.getElementById('warn-overlay').classList.add('open');
+    }
+
+    function openDelete(name) {
+      document.getElementById('simple-delete-name').textContent = name;
+      document.getElementById('delete-overlay').classList.add('open');
+    }
+
+    function saveRole() {
+      const nameInput = document.getElementById('role-name-input');
+      const nameError = document.getElementById('role-name-error');
+      const saveBtn = document.getElementById('role-save-btn');
+
+      if (!nameInput.value.trim()) {
+        nameInput.classList.add('error');
+        nameError.classList.add('show');
+        nameInput.focus();
+        return;
+      }
+      nameInput.classList.remove('error');
+      nameError.classList.remove('show');
+
+      saveBtn.classList.add('loading');
+      saveBtn.innerHTML = '<div class="spinner"></div> 保存中…';
+
+      setTimeout(() => {
+        saveBtn.innerHTML = '保存角色';
+        closeModal('role-overlay');
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

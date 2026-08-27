@@ -1,0 +1,151 @@
+/*
+ * Design tokens frozen from `UI design/components.html`, `index.html`,
+ * and the screen files that share the same design system
+ * (home/roles/settings/chat.html). Do not hardcode raw color/spacing
+ * values in components — reference these variables instead so every
+ * screen stays visually consistent.
+ */
+:root {
+  /* Color — accent */
+  --accent: oklch(56% 0.22 282);
+  --accent-hover: oklch(52% 0.22 282);
+  --accent-subtle: oklch(95% 0.06 280);
+  --accent-fg: #fff;
+
+  /* Color — surfaces */
+  --bg: oklch(97% 0.008 275);
+  --surface: #fff;
+  --surface-2: oklch(98.5% 0.005 275);
+
+  /* Color — text */
+  --fg: oklch(18% 0.025 270);
+  --fg-2: oklch(38% 0.02 270);
+  --muted: oklch(55% 0.015 270);
+
+  /* Color — border */
+  --border: oklch(88% 0.012 275);
+  --border-focus: oklch(68% 0.15 280);
+
+  /* Color — semantic */
+  --danger: oklch(56% 0.2 25);
+  --danger-light: oklch(96% 0.05 25);
+  --danger-border: oklch(85% 0.08 25);
+  --danger-tint: oklch(92% 0.06 25);
+  --warning: oklch(60% 0.18 60);
+  --warning-light: oklch(93% 0.1 65);
+  --warning-border: oklch(86% 0.1 70);
+  --success: oklch(58% 0.16 150);
+  --success-light: oklch(95% 0.05 150);
+
+  /* Color — interactive tints (previously hardcoded per-component with tiny
+     drifted variants of the same intent; unified here so dark mode has a
+     single point to override instead of a dozen scattered literals) */
+  --border-accent: oklch(78% 0.11 280);
+  --accent-subtle-hover: oklch(90% 0.1 280);
+
+  /* Color — component-specific */
+  --bubble-them-bg: oklch(95% 0.008 270);
+  --bubble-them-fg: oklch(22% 0.022 270);
+  --annotation-tag-fg: oklch(58% 0.16 280);
+  --annotation-tag-bg: oklch(93% 0.07 280);
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 4px oklch(18% 0.025 270 / 0.06);
+  --shadow-md: 0 4px 16px oklch(18% 0.025 270 / 0.1);
+  --shadow-lg: 0 8px 32px oklch(18% 0.025 270 / 0.15);
+
+  /* Type */
+  --font: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 20px;
+  --text-3xl: 24px;
+
+  /* Spacing (4px rhythm) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 48px;
+
+  /* Motion */
+  --duration-fast: 0.12s;
+  --duration-base: 0.15s;
+  --duration-slow: 0.2s;
+  --ease: ease;
+}
+
+/*
+ * Dark mode, opt-in only via the "深色模式" setting (no `prefers-color-scheme`
+ * auto-detection — see the PRD's explicit "no follow-system third state"
+ * decision). Applied by toggling `data-theme="dark"` on <html>
+ * (`src/lib/applyDarkMode.ts`), not a media query.
+ *
+ * --accent/--accent-hover/--accent-fg and the semantic bases (--danger/
+ * --warning/--success) are deliberately NOT overridden here — they're
+ * already mid-lightness hues that read fine on both light and dark
+ * surfaces, and several components reference their exact oklch() values
+ * directly in box-shadows/focus-rings rather than via var() (e.g. Button's
+ * primary shadow, ToneChip's active shadow, Input/Select focus rings) —
+ * changing the base tokens without also hunting down every such literal
+ * would make them drift out of sync. Only the "light wash" variants meant
+ * to sit on a light surface (-subtle/-light/-tint/-border and the new
+ * component-specific tokens above) get real dark equivalents below, since
+ * those would be unreadable (near-white) left unchanged on a dark surface.
+ */
+:root[data-theme='dark'] {
+  /* Color — surfaces */
+  --bg: oklch(15% 0.012 275);
+  --surface: oklch(20% 0.014 275);
+  --surface-2: oklch(23% 0.012 275);
+
+  /* Color — text */
+  --fg: oklch(94% 0.006 270);
+  --fg-2: oklch(78% 0.012 270);
+  --muted: oklch(60% 0.015 270);
+
+  /* Color — border */
+  --border: oklch(30% 0.015 275);
+  --border-focus: oklch(70% 0.16 280);
+
+  /* Color — semantic tints */
+  --danger-light: oklch(28% 0.08 25);
+  --danger-border: oklch(38% 0.1 25);
+  --danger-tint: oklch(32% 0.1 25);
+  --warning-light: oklch(30% 0.08 65);
+  --warning-border: oklch(40% 0.1 70);
+  --success-light: oklch(28% 0.07 150);
+
+  /* Color — interactive tints */
+  --accent-subtle: oklch(28% 0.08 280);
+  --border-accent: oklch(45% 0.14 280);
+  --accent-subtle-hover: oklch(35% 0.12 280);
+
+  /* Color — component-specific */
+  --bubble-them-bg: oklch(26% 0.015 270);
+  --bubble-them-fg: oklch(92% 0.008 270);
+  --annotation-tag-fg: oklch(78% 0.14 280);
+  --annotation-tag-bg: oklch(30% 0.09 280);
+
+  /* Shadow — flat dark surfaces have little ambient light to cast a visible
+     shadow from, so these lean on plain black at higher opacity instead of
+     the light theme's tinted-neutral formula. */
+  --shadow-sm: 0 1px 4px oklch(0% 0 0 / 0.3);
+  --shadow-md: 0 4px 16px oklch(0% 0 0 / 0.4);
+  --shadow-lg: 0 8px 32px oklch(0% 0 0 / 0.5);
+}

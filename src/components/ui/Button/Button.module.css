@@ -1,0 +1,115 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  border: none;
+  transition:
+    background var(--duration-base) var(--ease),
+    box-shadow var(--duration-base) var(--ease),
+    color var(--duration-base) var(--ease),
+    border-color var(--duration-base) var(--ease),
+    transform var(--duration-fast) var(--ease);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+}
+
+/* Sizes */
+.md {
+  padding: 9px 18px;
+  border-radius: var(--r-md);
+  font-size: var(--text-md);
+}
+
+.sm {
+  padding: 7px 14px;
+  border-radius: var(--r-sm);
+  font-size: var(--text-base);
+}
+
+/* Variants */
+.primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 14px oklch(56% 0.22 282 / 0.3);
+}
+.primary:disabled {
+  background: var(--border);
+  color: var(--muted);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--fg-2);
+  border: 1.5px solid var(--border);
+}
+.ghost:hover:not(:disabled) {
+  background: var(--bg);
+}
+.ghost:disabled {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.danger {
+  background: var(--danger);
+  color: #fff;
+}
+.danger:hover:not(:disabled) {
+  background: oklch(52% 0.2 25);
+}
+.danger:disabled {
+  background: var(--danger-light);
+  color: var(--danger);
+  opacity: 0.6;
+}
+
+.subtle {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+.subtle:hover:not(:disabled) {
+  background: var(--accent-subtle-hover);
+}
+.subtle:disabled {
+  opacity: 0.5;
+}
+
+/* Loading */
+.loading {
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.subtle .spinner,
+.ghost .spinner {
+  border-color: oklch(55% 0.015 270 / 0.35);
+  border-top-color: var(--fg-2);
+}

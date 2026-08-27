@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1280" />
+  <title>会聊 — 设置</title>
+  <style>
+    :root {
+      --accent: oklch(56% 0.22 282);
+      --accent-hover: oklch(52% 0.22 282);
+      --accent-subtle: oklch(95% 0.06 280);
+      --accent-fg: #fff;
+      --bg: oklch(97% 0.008 275);
+      --surface: #fff;
+      --surface-2: oklch(98.5% 0.005 275);
+      --fg: oklch(18% 0.025 270);
+      --fg-2: oklch(38% 0.020 270);
+      --muted: oklch(55% 0.015 270);
+      --border: oklch(88% 0.012 275);
+      --border-focus: oklch(68% 0.15 280);
+      --danger: oklch(56% 0.20 25);
+      --danger-light: oklch(96% 0.05 25);
+      --success: oklch(58% 0.16 150);
+      --success-light: oklch(95% 0.05 150);
+      --success-border: oklch(82% 0.12 150);
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-xl: 20px;
+      --r-pill: 999px;
+      --shadow-sm: 0 1px 4px oklch(18% 0.025 270 / 0.06);
+      --shadow-md: 0 4px 16px oklch(18% 0.025 270 / 0.10);
+      --shadow-lg: 0 8px 32px oklch(18% 0.025 270 / 0.15);
+      --font: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .titlebar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 24px;
+    }
+    .back-btn {
+      width: 34px; height: 34px;
+      border-radius: var(--r-sm);
+      border: none; background: transparent;
+      color: var(--muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s, color 0.12s;
+      text-decoration: none;
+    }
+    .back-btn:hover { background: var(--bg); color: var(--fg); }
+    .page-title { font-size: 16px; font-weight: 700; }
+
+    .main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 36px 24px 80px;
+    }
+
+    /* Section card */
+    .settings-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .settings-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .settings-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .fields { display: flex; flex-direction: column; gap: 18px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-row { display: flex; flex-direction: column; gap: 6px; }
+
+    .field-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg-2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .field-hint { font-size: 12px; color: var(--muted); font-weight: 400; }
+
+    .field-input, .field-select {
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--fg);
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 10px 13px;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.12s;
+    }
+    .field-input:focus, .field-select:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px oklch(68% 0.15 280 / 0.13);
+      background: var(--surface);
+    }
+    .field-input.error { border-color: var(--danger); }
+    .field-input.error:focus { box-shadow: 0 0 0 3px oklch(56% 0.20 25 / 0.12); }
+    .field-select {
+      appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b87a0' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+      padding-right: 38px;
+    }
+
+    .field-error {
+      font-size: 12px;
+      color: var(--danger);
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+    .field-error.show { display: flex; }
+
+    /* Password field with show/hide */
+    .password-wrap {
+      position: relative;
+    }
+    .password-wrap .field-input {
+      padding-right: 44px;
+    }
+    .show-hide-btn {
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      transition: color 0.12s;
+    }
+    .show-hide-btn:hover { color: var(--fg-2); }
+
+    /* Model field with suggestions */
+    .model-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .model-chip {
+      padding: 3px 10px;
+      border-radius: var(--r-pill);
+      font-size: 12px;
+      font-weight: 500;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--fg-2);
+      cursor: pointer;
+      transition: border-color 0.12s, color 0.12s, background 0.12s;
+    }
+    .model-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-subtle);
+    }
+
+    /* General settings */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .toggle-row:first-child { padding-top: 0; }
+    .toggle-info .toggle-label { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+    .toggle-info .toggle-desc { font-size: 12px; color: var(--muted); }
+    .toggle {
+      width: 42px; height: 24px;
+      background: var(--border);
+      border-radius: var(--r-pill);
+      cursor: pointer;
+      position: relative;
+      border: none;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--accent); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      top: 3px; left: 3px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle.on::after { transform: translateX(18px); }
+
+    /* Save button */
+    .save-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 22px;
+      border-radius: var(--r-md);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.14s, box-shadow 0.14s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: var(--accent-fg); }
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 14px oklch(56% 0.22 282 / 0.30); }
+    .btn-primary.loading { opacity: 0.75; pointer-events: none; }
+    .btn-ghost { background: transparent; color: var(--fg-2); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: var(--bg); }
+
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: oklch(20% 0.02 270);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: var(--r-pill);
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s, transform 0.22s;
+      z-index: 1000;
+      white-space: nowrap;
+      box-shadow: var(--shadow-lg);
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast.success { background: oklch(35% 0.10 150); }
+    .toast.error { background: oklch(40% 0.12 25); }
+
+    /* Provider icons */
+    .provider-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Version info */
+    .version-info {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 32px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="titlebar">
+    <a class="back-btn" href="home.html">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </a>
+    <span class="page-title">设置</span>
+  </header>
+
+  <main class="main">
+
+    <!-- LLM Config -->
+    <div class="settings-card">
+      <div class="settings-section-title">LLM 配置</div>
+      <div class="fields">
+
+        <!-- Provider -->
+        <div class="field">
+          <label class="field-label" for="provider-select">AI 提供方</label>
+          <select id="provider-select" class="field-select" onchange="onProviderChange(this.value)">
+            <option value="openai">OpenAI</option>
+            <option value="anthropic" selected>Anthropic</option>
+            <option value="zhipu">智谱 GLM</option>
+            <option value="minimax">MiniMax</option>
+            <option value="kimi">Kimi (Moonshot)</option>
+            <option value="qwen">通义千问 (Qwen)</option>
+            <option value="custom">自定义 OpenAI 兼容端点</option>
+          </select>
+        </div>
+
+        <!-- Custom endpoint (shown when custom selected) -->
+        <div class="field" id="custom-endpoint-field" style="display:none;">
+          <label class="field-label" for="endpoint-input">
+            API Endpoint
+            <span class="field-hint">自定义兼容 OpenAI 格式的基础 URL</span>
+          </label>
+          <input type="url" id="endpoint-input" class="field-input" placeholder="https://your-endpoint.com/v1" />
+        </div>
+
+        <!-- API Key -->
+        <div class="field">
+          <label class="field-label" for="api-key-input">
+            API Key
+            <span class="field-hint">在本地加密存储，不上传</span>
+          </label>
+          <div class="password-wrap">
+            <input type="password" id="api-key-input" class="field-input" placeholder="sk-••••••••••••••••" value="sk-ant-api03-••••••••••••••••••••••••" />
+            <button class="show-hide-btn" onclick="toggleApiKey()" title="显示/隐藏" id="show-hide-btn">
+              <svg id="eye-icon" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="field-error" id="key-error">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            请填写 API Key
+          </span>
+        </div>
+
+        <!-- Model -->
+        <div class="field">
+          <label class="field-label" for="model-input">模型名称</label>
+          <input type="text" id="model-input" class="field-input" placeholder="claude-sonnet-4-6" value="claude-sonnet-4-6" />
+          <div class="model-suggestions" id="model-suggestions">
+            <button class="model-chip" onclick="setModel('claude-opus-4-6')">claude-opus-4-6</button>
+            <button class="model-chip" onclick="setModel('claude-sonnet-4-6')">claude-sonnet-4-6</button>
+            <button class="model-chip" onclick="setModel('claude-haiku-4-5')">claude-haiku-4-5</button>
+          </div>
+        </div>
+
+        <div class="save-row">
+          <button class="btn btn-ghost" onclick="testConnection()">测试连接</button>
+          <button class="btn btn-primary" id="save-btn" onclick="saveLLM()">保存配置</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- General Settings -->
+    <div class="settings-card">
+      <div class="settings-section-title">通用</div>
+      <div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">翻译非中文消息</div>
+            <div class="toggle-desc">对方发的英文、日文等自动显示中文翻译</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">复制时自动添加到历史</div>
+            <div class="toggle-desc">点击复制后自动把该条记录追加到对话历史</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">关闭应用时保留历史记录</div>
+            <div class="toggle-desc">关闭后下次打开仍可看到之前的对话历史</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">发送使用统计（匿名）</div>
+            <div class="toggle-desc">帮助改进产品，不含任何聊天内容</div>
+          </div>
+          <button class="toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="version-info">
+      会聊 v0.1.0 · Phase 1 · 仅本地运行，不连接社交账号
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast success" id="toast">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toast-text">配置已保存</span>
+  </div>
+
+  <script>
+    const PROVIDERS = {
+      openai: {
+        models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
+        placeholder: 'sk-...',
+        keyPlaceholder: 'gpt-4o'
+      },
+      anthropic: {
+        models: ['claude-opus-4-6', 'claude-sonnet-4-6', 'claude-haiku-4-5'],
+        placeholder: 'sk-ant-api03-...',
+        keyPlaceholder: 'claude-sonnet-4-6'
+      },
+      zhipu: {
+        models: ['glm-4', 'glm-4-flash', 'glm-3-turbo'],
+        placeholder: '',
+        keyPlaceholder: 'glm-4'
+      },
+      minimax: {
+        models: ['abab6.5s-chat', 'abab5.5-chat'],
+        placeholder: '',
+        keyPlaceholder: 'abab6.5s-chat'
+      },
+      kimi: {
+        models: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
+        placeholder: 'sk-...',
+        keyPlaceholder: 'moonshot-v1-32k'
+      },
+      qwen: {
+        models: ['qwen-turbo', 'qwen-plus', 'qwen-max'],
+        placeholder: 'sk-...',
+        keyPlaceholder: 'qwen-plus'
+      },
+      custom: {
+        models: [],
+        placeholder: '',
+        keyPlaceholder: ''
+      }
+    };
+
+    function onProviderChange(provider) {
+      const cfg = PROVIDERS[provider] || {};
+      const suggestions = document.getElementById('model-suggestions');
+      const modelInput = document.getElementById('model-input');
+      const customField = document.getElementById('custom-endpoint-field');
+      const apiKeyInput = document.getElementById('api-key-input');
+
+      // Show/hide custom endpoint
+      customField.style.display = provider === 'custom' ? 'flex' : 'none';
+
+      // Update model suggestions
+      suggestions.innerHTML = (cfg.models || []).map(m =>
+        `<button class="model-chip" onclick="setModel('${m}')">${m}</button>`
+      ).join('');
+
+      // Update placeholder
+      if (cfg.keyPlaceholder) modelInput.placeholder = cfg.keyPlaceholder;
+      modelInput.value = cfg.models[0] || '';
+      apiKeyInput.value = '';
+      apiKeyInput.placeholder = cfg.placeholder || 'your-api-key';
+    }
+
+    function setModel(name) {
+      document.getElementById('model-input').value = name;
+    }
+
+    let apiKeyVisible = false;
+    function toggleApiKey() {
+      const input = document.getElementById('api-key-input');
+      apiKeyVisible = !apiKeyVisible;
+      input.type = apiKeyVisible ? 'text' : 'password';
+      document.getElementById('eye-icon').innerHTML = apiKeyVisible
+        ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-text');
+      toast.className = `toast ${type}`;
+      text.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+
+    function saveLLM() {
+      const keyInput = document.getElementById('api-key-input');
+      const keyError = document.getElementById('key-error');
+      const btn = document.getElementById('save-btn');
+
+      if (!keyInput.value.trim()) {
+        keyInput.classList.add('error');
+        keyError.classList.add('show');
+        keyInput.focus();
+        return;
+      }
+      keyInput.classList.remove('error');
+      keyError.classList.remove('show');
+
+      btn.classList.add('loading');
+      btn.innerHTML = '<div class="spinner"></div> 保存中…';
+
+      setTimeout(() => {
+        btn.classList.remove('loading');
+        btn.innerHTML = '保存配置';
+        showToast('配置已保存', 'success');
+      }, 900);
+    }
+
+    function testConnection() {
+      showToast('连接测试成功 ✓', 'success');
+    }
+  </script>
+</body>
+</html>

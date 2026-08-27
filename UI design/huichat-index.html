@@ -1,0 +1,511 @@
+
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1280" />
+  <title>会聊 — 设计稿导览</title>
+  <style>
+    :root {
+      --accent: oklch(56% 0.22 282);
+      --accent-hover: oklch(52% 0.22 282);
+      --accent-subtle: oklch(95% 0.06 280);
+      --accent-fg: #fff;
+      --bg: oklch(97% 0.008 275);
+      --surface: #fff;
+      --fg: oklch(18% 0.025 270);
+      --fg-2: oklch(38% 0.020 270);
+      --muted: oklch(55% 0.015 270);
+      --border: oklch(88% 0.012 275);
+      --r-md: 12px;
+      --r-lg: 16px;
+      --shadow-sm: 0 1px 4px oklch(18% 0.025 270 / 0.06);
+      --shadow-md: 0 4px 16px oklch(18% 0.025 270 / 0.10);
+      --shadow-lg: 0 8px 32px oklch(18% 0.025 270 / 0.16);
+      --font: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-mark {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-mark svg { color: #fff; }
+    .logo-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--fg);
+      letter-spacing: -0.01em;
+    }
+    .logo-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+    .badge {
+      background: var(--accent-subtle);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .main { padding: 48px; max-width: 1280px; margin: 0 auto; }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+
+    .screen-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
+      display: block;
+    }
+    .screen-card:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: oklch(75% 0.12 280);
+      transform: translateY(-2px);
+    }
+    .screen-preview {
+      height: 200px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-home {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 24px;
+    }
+    .mini-card {
+      background: var(--surface);
+      border-radius: 10px;
+      width: 80px;
+      height: 96px;
+      box-shadow: var(--shadow-sm);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .mini-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+    .mini-line {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+    }
+    .mini-line.sm { width: 60%; }
+
+    .preview-chat {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 20px;
+      width: 100%;
+    }
+    .mini-bubble {
+      height: 10px;
+      border-radius: 8px;
+      background: oklch(93% 0.010 270);
+    }
+    .mini-bubble.me {
+      background: oklch(82% 0.12 282);
+      align-self: flex-end;
+    }
+    .mini-bubble.w60 { width: 60%; }
+    .mini-bubble.w45 { width: 45%; }
+    .mini-bubble.w70 { width: 70%; }
+    .mini-bubble.w35 { width: 35%; }
+    .mini-bubble.w55 { width: 55%; }
+
+    .screen-info {
+      padding: 20px;
+    }
+    .screen-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-subtle);
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+    }
+    .screen-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+    .screen-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .screen-link-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .screen-filename {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    }
+    .screen-open {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .comp-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .token-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 24px;
+    }
+    .token-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--fg);
+    }
+    .swatch-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .swatch {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .swatch-label {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+      text-align: center;
+      font-family: ui-monospace, monospace;
+    }
+    .swatch-item { display: flex; flex-direction: column; align-items: center; }
+
+    .font-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .font-sample { display: flex; align-items: baseline; gap: 12px; }
+    .font-spec {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      min-width: 80px;
+    }
+    .font-text-lg {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--fg);
+      letter-spacing: -0.02em;
+    }
+    .font-text-md {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--fg);
+    }
+    .font-text-sm {
+      font-size: 13px;
+      color: var(--fg-2);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M12 2C6.48 2 2 6.05 2 11c0 2.63 1.18 5.01 3.08 6.72L4 21.5l4.2-1.37C9.35 20.68 10.65 21 12 21c5.52 0 10-4.05 10-9s-4.48-9-10-9z"/>
+        </svg>
+      </div>
+      <span class="logo-name">会聊</span>
+      <span class="logo-sub">聊天回复助手</span>
+    </div>
+    <span class="badge">设计稿 · Phase 1</span>
+  </header>
+
+  <main class="main">
+
+    <p class="section-title">应用页面</p>
+    <div class="screen-grid">
+
+      <a class="screen-card" href="home.html">
+        <div class="screen-preview">
+          <div class="preview-home">
+            <div class="mini-card">
+              <div class="mini-avatar" style="background: oklch(78% 0.15 300);"></div>
+              <div class="mini-line"></div>
+              <div class="mini-line sm"></div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-avatar" style="background: oklch(72% 0.16 210);"></div>
+              <div class="mini-line"></div>
+              <div class="mini-line sm"></div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-avatar" style="background: oklch(76% 0.14 60);"></div>
+              <div class="mini-line"></div>
+              <div class="mini-line sm"></div>
+            </div>
+          </div>
+        </div>
+        <div class="screen-info">
+          <div class="screen-tag">01</div>
+          <div class="screen-name">首页 — 聊天对象</div>
+          <div class="screen-desc">卡片网格展示所有聊天对象，支持新建、编辑、删除，空状态引导。</div>
+          <div class="screen-link-row">
+            <span class="screen-filename">home.html</span>
+            <span class="screen-open">打开 →</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="screen-card" href="chat.html">
+        <div class="screen-preview">
+          <div class="preview-chat">
+            <div class="mini-bubble w60"></div>
+            <div class="mini-bubble w45 me"></div>
+            <div class="mini-bubble w70"></div>
+            <div class="mini-bubble w35 me"></div>
+            <div class="mini-bubble w55"></div>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+              <div style="height:24px; flex:1; border-radius:6px; background: var(--accent); opacity:0.85;"></div>
+              <div style="height:24px; flex:1; border-radius:6px; background: var(--accent); opacity:0.85;"></div>
+              <div style="height:24px; flex:1; border-radius:6px; background: var(--accent); opacity:0.85;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="screen-info">
+          <div class="screen-tag">核心 ★</div>
+          <div class="screen-name">聊天详情 — 对话辅助</div>
+          <div class="screen-desc">消息历史 + AI 生成 3 条候选回复，语气选择、润色、一键复制。</div>
+          <div class="screen-link-row">
+            <span class="screen-filename">chat.html</span>
+            <span class="screen-open">打开 →</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="screen-card" href="roles.html">
+        <div class="screen-preview" style="align-items: flex-start; padding: 20px;">
+          <div style="width:100%; display:flex; flex-direction:column; gap:8px;">
+            <div style="background:var(--surface); border-radius:8px; height:36px; display:flex; align-items:center; padding:0 12px; gap:10px; box-shadow:var(--shadow-sm);">
+              <div style="width:28px;height:28px;border-radius:50%;background:oklch(78% 0.15 282);"></div>
+              <div style="flex:1;height:6px;background:var(--border);border-radius:3px;"></div>
+              <div style="width:40px;height:6px;background:var(--border);border-radius:3px;"></div>
+            </div>
+            <div style="background:var(--surface); border-radius:8px; height:36px; display:flex; align-items:center; padding:0 12px; gap:10px; box-shadow:var(--shadow-sm);">
+              <div style="width:28px;height:28px;border-radius:50%;background:oklch(72% 0.16 150);"></div>
+              <div style="flex:1;height:6px;background:var(--border);border-radius:3px;"></div>
+              <div style="width:40px;height:6px;background:var(--border);border-radius:3px;"></div>
+            </div>
+            <div style="background:var(--surface); border-radius:8px; height:36px; display:flex; align-items:center; padding:0 12px; gap:10px; box-shadow:var(--shadow-sm);">
+              <div style="width:28px;height:28px;border-radius:50%;background:oklch(74% 0.14 60);"></div>
+              <div style="flex:1;height:6px;background:var(--border);border-radius:3px;"></div>
+              <div style="width:40px;height:6px;background:var(--border);border-radius:3px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="screen-info">
+          <div class="screen-tag">03</div>
+          <div class="screen-name">我的角色</div>
+          <div class="screen-desc">管理己方角色档案，包含删除引用保护提示。</div>
+          <div class="screen-link-row">
+            <span class="screen-filename">roles.html</span>
+            <span class="screen-open">打开 →</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="screen-card" href="settings.html">
+        <div class="screen-preview" style="flex-direction:column; align-items:flex-start; padding:24px; gap:10px;">
+          <div style="width:100%;height:32px;background:var(--surface);border-radius:8px;box-shadow:var(--shadow-sm);"></div>
+          <div style="width:100%;height:32px;background:var(--surface);border-radius:8px;box-shadow:var(--shadow-sm);"></div>
+          <div style="width:100%;height:32px;background:var(--surface);border-radius:8px;box-shadow:var(--shadow-sm);"></div>
+          <div style="width:80px;height:32px;background:var(--accent);border-radius:8px;opacity:0.85;"></div>
+        </div>
+        <div class="screen-info">
+          <div class="screen-tag">04</div>
+          <div class="screen-name">设置</div>
+          <div class="screen-desc">LLM 配置：Provider / API Key / Model，单栏简洁布局，保存成功 Toast。</div>
+          <div class="screen-link-row">
+            <span class="screen-filename">settings.html</span>
+            <span class="screen-open">打开 →</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="screen-card" href="components.html">
+        <div class="screen-preview" style="flex-wrap:wrap; gap:8px; padding:16px; align-content:flex-start;">
+          <div style="height:28px;padding:0 12px;background:var(--accent);border-radius:999px;opacity:0.9;display:flex;align-items:center;">
+            <div style="width:48px;height:6px;background:rgba(255,255,255,0.7);border-radius:3px;"></div>
+          </div>
+          <div style="height:28px;padding:0 12px;background:var(--accent-subtle);border-radius:999px;display:flex;align-items:center;">
+            <div style="width:36px;height:6px;background:oklch(68% 0.15 280 / 0.5);border-radius:3px;"></div>
+          </div>
+          <div style="height:28px;padding:0 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:999px;display:flex;align-items:center;">
+            <div style="width:42px;height:6px;background:var(--border);border-radius:3px;"></div>
+          </div>
+          <div style="width:100%;height:40px;background:var(--surface);border-radius:8px;box-shadow:var(--shadow-sm);border:1px solid var(--border);"></div>
+          <div style="width:100%;height:40px;background:oklch(82% 0.12 282);border-radius:14px;opacity:0.8;"></div>
+        </div>
+        <div class="screen-info">
+          <div class="screen-tag">组件库</div>
+          <div class="screen-name">组件规范</div>
+          <div class="screen-desc">8 组核心组件的全状态规范：默认 / hover / 激活 / 禁用 / 错误。</div>
+          <div class="screen-link-row">
+            <span class="screen-filename">components.html</span>
+            <span class="screen-open">打开 →</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <p class="section-title">设计系统速览</p>
+    <div class="comp-row">
+      <div class="token-card">
+        <div class="token-title">色彩 Token</div>
+        <div class="swatch-row">
+          <div class="swatch-item">
+            <div class="swatch" style="background: oklch(56% 0.22 282);"></div>
+            <div class="swatch-label">accent</div>
+          </div>
+          <div class="swatch-item">
+            <div class="swatch" style="background: oklch(95% 0.06 280);"></div>
+            <div class="swatch-label">subtle</div>
+          </div>
+          <div class="swatch-item">
+            <div class="swatch" style="background: oklch(97% 0.008 275);"></div>
+            <div class="swatch-label">bg</div>
+          </div>
+          <div class="swatch-item">
+            <div class="swatch" style="background: #fff; border:1.5px solid var(--border);"></div>
+            <div class="swatch-label">surface</div>
+          </div>
+          <div class="swatch-item">
+            <div class="swatch" style="background: oklch(18% 0.025 270);"></div>
+            <div class="swatch-label">fg</div>
+          </div>
+          <div class="swatch-item">
+            <div class="swatch" style="background: oklch(55% 0.015 270);"></div>
+            <div class="swatch-label">muted</div>
+          </div>
+          <div class="swatch-item">
+            <div class="swatch" style="background: oklch(56% 0.20 25);"></div>
+            <div class="swatch-label">danger</div>
+          </div>
+          <div class="swatch-item">
+            <div class="swatch" style="background: oklch(58% 0.16 150);"></div>
+            <div class="swatch-label">success</div>
+          </div>
+        </div>
+      </div>
+      <div class="token-card">
+        <div class="token-title">字体比例</div>
+        <div class="font-row">
+          <div class="font-sample">
+            <span class="font-spec">28px / 700</span>
+            <span class="font-text-lg">会聊标题</span>
+          </div>
+          <div class="font-sample">
+            <span class="font-spec">16px / 500</span>
+            <span class="font-text-md">正文次级标题</span>
+          </div>
+          <div class="font-sample">
+            <span class="font-spec">14px / 400</span>
+            <span class="font-text-sm">描述性正文，宽松行高，长时间阅读不刺眼。PingFang SC / Inter 混排。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

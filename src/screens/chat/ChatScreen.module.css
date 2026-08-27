@@ -1,0 +1,500 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  padding: 0 var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+.goalTags {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.goalTag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 4px 10px;
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+  max-width: 220px;
+  transition: border-color var(--duration-fast) var(--ease);
+}
+
+.goalTag:focus-within,
+.goalTag:hover {
+  border-color: var(--border-focus);
+}
+
+.goalTagLabel {
+  color: var(--muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.goalTagText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goalTagInput {
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font);
+  font-size: var(--text-sm);
+  color: var(--fg);
+  width: 130px;
+  min-width: 60px;
+}
+
+.goalTagInput::placeholder {
+  color: var(--muted);
+}
+
+.history {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-5) var(--space-4);
+}
+
+.placeholder {
+  margin: auto;
+  font-size: var(--text-base);
+  color: var(--muted);
+  text-align: center;
+}
+
+.msgRow {
+  display: flex;
+  gap: 10px;
+  max-width: 72%;
+  margin-bottom: 4px;
+}
+
+.msgRow.them {
+  align-self: flex-start;
+}
+
+.msgRow.me {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.msgAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+}
+
+.msgContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.msgTime {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  padding: 0 2px;
+}
+
+.msgDeleteBtn {
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
+/* Hover-capable pointers (mouse/trackpad) reveal the delete button only on
+   hover/focus, keeping the thread visually quiet; touch devices have no
+   hover state to reveal it with, so it must stay visible there instead. */
+@media (hover: hover) {
+  .msgDeleteBtn {
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease);
+  }
+
+  .msgRow:hover .msgDeleteBtn,
+  .msgRow:focus-within .msgDeleteBtn {
+    opacity: 1;
+  }
+}
+
+.bottomPanel {
+  background: var(--surface);
+  border-top: 1.5px solid var(--border);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  flex-shrink: 0;
+}
+
+.inputRow {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.senderSelect {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  color: var(--fg);
+  padding: 0 8px;
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-height: 42px;
+}
+
+.pasteInput {
+  flex: 1;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 13px;
+  font-family: var(--font);
+  font-size: var(--text-md);
+  color: var(--fg);
+  line-height: 1.55;
+  resize: none;
+  outline: none;
+  min-height: 42px;
+  max-height: 100px;
+  transition:
+    border-color var(--duration-base) var(--ease),
+    box-shadow var(--duration-base) var(--ease);
+}
+
+.pasteInput:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px oklch(68% 0.15 280 / 0.12);
+  background: var(--surface);
+}
+
+.pasteInput::placeholder {
+  color: var(--muted);
+}
+
+.pasteGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.annotationToggle {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  padding: 0;
+  transition: color var(--duration-fast) var(--ease);
+  flex-shrink: 0;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.annotationToggle:hover {
+  color: var(--fg-2);
+}
+
+.annotationExpand {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--space-3);
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+
+.annTypeSelect {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  color: var(--fg);
+  padding: 8px 10px;
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.annMeaningInput {
+  flex: 1;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  color: var(--fg);
+  padding: 8px 10px;
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease);
+}
+
+.annMeaningInput:focus {
+  border-color: var(--border-focus);
+}
+
+.annMeaningInput::placeholder {
+  color: var(--muted);
+}
+
+.toneRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+
+.toneLabel {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+
+.addToneBtn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px dashed var(--border);
+  background: none;
+  color: var(--muted);
+  transition:
+    border-color var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.addToneBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.customToneInput {
+  width: 100px;
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  border: 1.5px solid var(--border-focus);
+  background: var(--surface);
+  color: var(--fg);
+  outline: none;
+}
+
+.customToneInput::placeholder {
+  color: var(--muted);
+}
+
+.genRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.genBtn {
+  height: 44px;
+  padding: 0 var(--space-6);
+  font-size: var(--text-lg);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.replyArea {
+  flex: 1;
+  min-width: 0;
+}
+
+.replyCardsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.replyHeaderLabel {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.replyCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.skeletonCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.skeletonCard {
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.skelLine {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--border) 25%, oklch(92% 0.008 275) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.errorCard {
+  background: var(--danger-light);
+  border: 1.5px solid var(--danger-border);
+  border-radius: var(--r-md);
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--danger);
+}
+
+.errorCardText {
+  font-size: var(--text-base);
+  flex: 1;
+}
+
+.retryBtn {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--danger);
+  border: 1.5px solid var(--danger-border);
+  background: none;
+  border-radius: var(--r-sm);
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: var(--font);
+  white-space: nowrap;
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.retryBtn:hover {
+  background: var(--danger-tint);
+}
+
+.polishRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.polishLabel {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.polishInput {
+  flex: 1;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 8px 12px;
+  font-family: var(--font);
+  font-size: var(--text-base);
+  color: var(--fg);
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease);
+}
+
+.polishInput:focus {
+  border-color: var(--border-focus);
+  background: var(--surface);
+}
+
+.polishInput::placeholder {
+  color: var(--muted);
+}

@@ -1,0 +1,124 @@
+.titlebar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.name {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.main {
+  padding: var(--space-7) 28px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.sectionTitle {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.sectionCount {
+  font-size: var(--text-md);
+  color: var(--muted);
+  margin-left: var(--space-2);
+  font-weight: 400;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px var(--space-6);
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-6);
+}
+
+.emptyTitle {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--fg-2);
+  margin-bottom: var(--space-2);
+}
+
+.emptySub {
+  font-size: var(--text-md);
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 320px;
+  margin-bottom: var(--space-6);
+}
+
+.selectRow {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-end;
+}
+
+.selectRow > *:first-child {
+  flex: 1;
+}
+
+.newRoleBtn {
+  height: 40px;
+  padding: 0 12px;
+  white-space: nowrap;
+  font-size: var(--text-base);
+  border-radius: var(--r-md);
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: background var(--duration-base) var(--ease);
+  font-family: var(--font);
+}
+
+.newRoleBtn:hover {
+  background: var(--accent-subtle-hover);
+}

@@ -1,0 +1,82 @@
+.titlebar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-6);
+}
+
+.pageTitle {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  flex: 1;
+}
+
+.main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 36px var(--space-6) 80px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-5);
+}
+
+.sectionTitle {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sectionTitle::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.dirRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-top: 12px;
+}
+
+.dirInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.dirLabel {
+  font-size: var(--text-md);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.dirPath {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.versionInfo {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  margin-top: var(--space-7);
+}

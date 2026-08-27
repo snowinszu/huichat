@@ -1,0 +1,51 @@
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * Full-width strip pinned to the bottom, centered via flexbox instead of
+ * the classic `left: 50%; transform: translateX(-50%)` trick — that
+ * combination visibly drifted sideways during the entrance animation
+ * (transform-based centering fights the transform-based slide-in when the
+ * browser recomputes layout mid-animation). Flex centering has no
+ * horizontal transform math to go wrong.
+ */
+.viewport {
+  position: fixed;
+  inset: auto 0 32px 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.toast {
+  pointer-events: auto;
+  background: oklch(20% 0.02 270);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--r-pill);
+  font-size: var(--text-md);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn var(--duration-slow) var(--ease);
+}
+
+.success {
+  background: oklch(35% 0.1 150);
+}
+
+.error {
+  background: oklch(40% 0.12 25);
+}

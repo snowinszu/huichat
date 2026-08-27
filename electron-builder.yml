@@ -1,0 +1,65 @@
+appId: com.huichat.app
+productName: 会聊
+
+directories:
+  output: release
+
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - package.json
+  - "!**/*.map"
+
+# better-sqlite3 is a native addon — Node cannot load a .node file out of an
+# asar archive, so it must be unpacked to app.asar.unpacked at build time.
+asarUnpack:
+  - "**/*.node"
+
+# Rebuild native deps (better-sqlite3) for each build target's platform/arch
+# during packaging — the postinstall-time rebuild only matches the host
+# machine, which is wrong the moment you package for a different arch (e.g.
+# an x64 slice of a mac universal build on an arm64 dev machine).
+npmRebuild: true
+
+mac:
+  # Relative to directories.buildResources (default "build/"), i.e. resolves
+  # to build/icon.icns. Not present yet — see build/README.md. electron-builder
+  # falls back to its own default icon (with a warning, not an error) when the
+  # file is missing, so this is safe to reference ahead of time; dropping the
+  # real file in later needs no config change.
+  icon: icon.icns
+  # No Apple Developer identity is configured for this project yet (see PRD
+  # non-goals: signing/notarization is out of scope for now). Without this,
+  # electron-builder silently auto-signs with whatever dev certificate it
+  # finds in the local keychain, producing a build that behaves differently
+  # machine to machine. Forcing this to null keeps `dist:mac` output
+  # consistent (and Gatekeeper-blocked the same way) everywhere until
+  # signing is deliberately set up.
+  identity: null
+  # better-sqlite3 ships one prebuilt .node binary per platform/arch (see
+  # node_modules/better-sqlite3/prebuilds/) — the whole prebuilds/ folder is
+  # copied into the app unpacked, unchanged, so the x64 build and the arm64
+  # build both end up containing the identical darwin-arm64.node /
+  # darwin-x64.node files. @electron/universal's merge step treats any
+  # native binary that's byte-identical across the two per-arch builds as
+  # suspicious unless it matches this glob — these files are legitimately
+  # identical (they're not meant to be lipo'd together; better-sqlite3
+  # picks the right one at runtime by process.arch), so this tells the
+  # merge step to take it as-is instead of failing the build.
+  x64ArchFiles: "**/*.node"
+  # electron-builder's default mac target set is [zip, dmg]; the PRD only
+  # calls for a dmg installer, so pin it explicitly rather than shipping an
+  # extra .zip nobody asked for.
+  target: dmg
+
+# nsis is electron-builder's default Windows target already, so no explicit
+# win.target override is needed here.
+#
+# Windows installers cannot be produced from macOS: better-sqlite3's native
+# binary must be rebuilt for win32/x64, which requires a Windows (or
+# equivalent MSVC cross-compile) toolchain that this project does not set
+# up. `npm run dist:win` must be run on a Windows host.
+win:
+  # Relative to directories.buildResources ("build/"), i.e. build/icon.ico.
+  # Same missing-file-is-safe fallback behavior as mac.icon above.
+  icon: icon.ico

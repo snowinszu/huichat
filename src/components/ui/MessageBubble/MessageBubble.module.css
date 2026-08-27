@@ -1,0 +1,72 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 280px;
+}
+
+.bubble {
+  padding: 10px 14px;
+  border-radius: var(--r-lg);
+  font-size: var(--text-md);
+  line-height: 1.6;
+}
+
+.them {
+  background: var(--bubble-them-bg);
+  color: var(--bubble-them-fg);
+  border-bottom-left-radius: 4px;
+}
+
+.me {
+  background: var(--accent);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+  align-self: flex-end;
+}
+
+.translation {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 7px 11px;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+}
+
+.translationTag {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.annotation {
+  background: var(--surface);
+  border: 1.5px dashed var(--border-accent);
+  border-radius: var(--r-lg);
+  padding: 9px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+.annotationTag {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  color: var(--annotation-tag-fg);
+  background: var(--annotation-tag-bg);
+  padding: 2px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
