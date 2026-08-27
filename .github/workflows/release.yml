@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - run: npm ci --ignore-scripts
+
+      - run: npm run typecheck
+
+      - run: npm run lint
+
+  build:
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            dist-script: dist:mac
+            artifact-name: mac-dmg
+            artifact-glob: release/*.dmg
+          - os: windows-latest
+            dist-script: dist:win
+            artifact-name: win-installer
+            artifact-glob: release/*.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      # Full install (with postinstall's electron-rebuild) is required here —
+      # unlike the verify job, this one needs a working native better-sqlite3
+      # binary for the target platform/arch, which electron-builder's
+      # npmRebuild: true (electron-builder.yml) also re-verifies at pack time.
+      - run: npm ci
+
+      - run: npm run ${{ matrix.dist-script }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.artifact-glob }}
+          if-no-files-found: error
