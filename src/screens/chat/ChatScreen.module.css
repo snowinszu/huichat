@@ -157,7 +157,7 @@
   padding: 0 2px;
 }
 
-.msgDeleteBtn {
+.msgActionBtn {
   align-self: flex-start;
   flex-shrink: 0;
 }
@@ -166,13 +166,13 @@
    hover/focus, keeping the thread visually quiet; touch devices have no
    hover state to reveal it with, so it must stay visible there instead. */
 @media (hover: hover) {
-  .msgDeleteBtn {
+  .msgActionBtn {
     opacity: 0;
     transition: opacity var(--duration-fast) var(--ease);
   }
 
-  .msgRow:hover .msgDeleteBtn,
-  .msgRow:focus-within .msgDeleteBtn {
+  .msgRow:hover .msgActionBtn,
+  .msgRow:focus-within .msgActionBtn {
     opacity: 1;
   }
 }

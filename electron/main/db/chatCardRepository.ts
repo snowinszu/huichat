@@ -10,6 +10,7 @@ interface ChatCardRow {
   long_term_goal: string;
   short_term_goal: string;
   persona_id: number | null;
+  group_id: number | null;
   created_at: number;
   updated_at: number;
   history_summary: string;
@@ -25,6 +26,7 @@ function toRecord(row: ChatCardRow): ChatCardRecord {
     longTermGoal: row.long_term_goal,
     shortTermGoal: row.short_term_goal,
     personaId: row.persona_id,
+    groupId: row.group_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     historySummary: row.history_summary,
@@ -36,8 +38,8 @@ export function createChatCard(db: Database.Database, input: CreateChatCardInput
   const now = Date.now();
   const result = db
     .prepare(
-      `INSERT INTO chat_card (name, other_info, avatar_path, long_term_goal, short_term_goal, persona_id, created_at, updated_at)
-       VALUES (@name, @otherInfo, @avatarPath, @longTermGoal, @shortTermGoal, @personaId, @createdAt, @updatedAt)`,
+      `INSERT INTO chat_card (name, other_info, avatar_path, long_term_goal, short_term_goal, persona_id, group_id, created_at, updated_at)
+       VALUES (@name, @otherInfo, @avatarPath, @longTermGoal, @shortTermGoal, @personaId, @groupId, @createdAt, @updatedAt)`,
     )
     .run({
       name: input.name,
@@ -46,6 +48,7 @@ export function createChatCard(db: Database.Database, input: CreateChatCardInput
       longTermGoal: input.longTermGoal ?? '',
       shortTermGoal: input.shortTermGoal ?? '',
       personaId: input.personaId ?? null,
+      groupId: input.groupId ?? null,
       createdAt: now,
       updatedAt: now,
     });
@@ -76,6 +79,7 @@ const UPDATABLE_COLUMNS: Record<keyof UpdateChatCardInput, string> = {
   longTermGoal: 'long_term_goal',
   shortTermGoal: 'short_term_goal',
   personaId: 'persona_id',
+  groupId: 'group_id',
   historySummary: 'history_summary',
   summarizedThroughMessageId: 'summarized_through_message_id',
 };

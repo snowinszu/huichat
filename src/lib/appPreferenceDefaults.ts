@@ -8,5 +8,7 @@ export const DEFAULT_APP_PREFERENCE: AppPreferenceRecord = {
   darkMode: false,
   debugPromptExport: false,
   debugExportDir: null,
+  webSearchEnabled: false,
+  webSearchApiKey: null,
   updatedAt: 0,
 };

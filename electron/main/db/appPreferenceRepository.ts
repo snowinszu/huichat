@@ -9,6 +9,8 @@ interface AppPreferenceRow {
   dark_mode: 0 | 1;
   debug_prompt_export: 0 | 1;
   debug_export_dir: string | null;
+  web_search_enabled: 0 | 1;
+  web_search_api_key: string | null;
   updated_at: number;
 }
 
@@ -20,6 +22,8 @@ function toRecord(row: AppPreferenceRow): AppPreferenceRecord {
     darkMode: row.dark_mode === 1,
     debugPromptExport: row.debug_prompt_export === 1,
     debugExportDir: row.debug_export_dir,
+    webSearchEnabled: row.web_search_enabled === 1,
+    webSearchApiKey: row.web_search_api_key,
     updatedAt: row.updated_at,
   };
 }
@@ -37,6 +41,8 @@ const UPDATABLE_COLUMNS: Record<keyof UpdateAppPreferenceInput, string> = {
   darkMode: 'dark_mode',
   debugPromptExport: 'debug_prompt_export',
   debugExportDir: 'debug_export_dir',
+  webSearchEnabled: 'web_search_enabled',
+  webSearchApiKey: 'web_search_api_key',
 };
 
 // debugExportDir is a plain string (or null to clear it), not a toggle — the
@@ -49,6 +55,8 @@ const COLUMN_PARAM_VALUE: Record<keyof UpdateAppPreferenceInput, (value: unknown
   darkMode: (value) => (value ? 1 : 0),
   debugPromptExport: (value) => (value ? 1 : 0),
   debugExportDir: (value) => value,
+  webSearchEnabled: (value) => (value ? 1 : 0),
+  webSearchApiKey: (value) => value,
 };
 
 /** Writes only the fields present in `patch`, immediately — same no-draft-state contract as every other repository in this app (e.g. `updatePersona`). */

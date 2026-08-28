@@ -55,13 +55,21 @@ function buildHistorySection(card: ChatCardRecord, messages: MessageRecord[], de
   return `【更早的对话摘要】\n${card.historySummary}\n\n【最近的聊天记录】（按时间先后顺序）\n${recentText}`;
 }
 
+// A separate section (rather than folding into 【我的角色设定】) so it reads
+// as a concrete, literal instruction about wording/punctuation/emoji habits
+// rather than personality/background — and so it can be omitted entirely
+// when unset instead of leaving an empty sub-heading under the role setup.
+function buildStyleSection(persona: PersonaRecord | undefined): string {
+  return persona?.style ? `\n\n【说话习惯】\n${persona.style}` : '';
+}
+
 /** The card/persona/goal/history block shared by every LLM prompt in this app (candidate replies, draft polish, …). */
 export function buildContextSection({ card, persona, messages, debugMode }: PromptContextInput): string {
   return `【对方信息】
 ${card.otherInfo || '未填写'}
 
 【我的角色设定】
-${persona?.bio || '未设置角色'}
+${persona?.bio || '未设置角色'}${buildStyleSection(persona)}
 
 【聊天最终目标】
 ${card.longTermGoal || '未设定'}

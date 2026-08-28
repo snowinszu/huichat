@@ -123,3 +123,89 @@ export function migrateChatCardHistorySummaryColumns(db: Database.Database): voi
     db.exec('ALTER TABLE chat_card ADD COLUMN summarized_through_message_id INTEGER');
   }
 }
+
+/**
+ * Same class of problem as `migrateAppPreferenceDebugExportColumns`: the
+ * app-lock feature added `lock_password_hash` and `lock_password_salt`
+ * straight into schema.ts's `CREATE TABLE IF NOT EXISTS`, which never alters
+ * an `app_preference` table that already exists from before this feature
+ * shipped.
+ */
+export function migrateAppPreferenceLockColumns(db: Database.Database): void {
+  const tableExists = db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'app_preference'`).get();
+  if (!tableExists) return;
+
+  const columns = new Set((db.pragma('table_info(app_preference)') as TableInfoRow[]).map((column) => column.name));
+  if (!columns.has('lock_password_hash')) {
+    db.exec('ALTER TABLE app_preference ADD COLUMN lock_password_hash TEXT');
+  }
+  if (!columns.has('lock_password_salt')) {
+    db.exec('ALTER TABLE app_preference ADD COLUMN lock_password_salt TEXT');
+  }
+}
+
+/**
+ * Same class of problem as `migrateAppPreferenceDebugExportColumns`: the
+ * web-search feature added `web_search_enabled` and `web_search_api_key`
+ * straight into schema.ts's `CREATE TABLE IF NOT EXISTS`, which never
+ * alters an `app_preference` table that already exists from before this
+ * feature shipped.
+ */
+/**
+ * Same class of problem as `migrateChatCardHistorySummaryColumns`: the
+ * chat-card-grouping feature added `chat_group` and a `chat_card.group_id`
+ * foreign key straight into schema.ts, which never alters a `chat_card`
+ * table that already exists from before this feature shipped.
+ *
+ * `chat_group` is created here (not left to the baseline `CREATE TABLE IF
+ * NOT EXISTS` below) so the table exists before the `ALTER TABLE ADD COLUMN
+ * ... REFERENCES chat_group(id)` runs — on a fresh install neither table
+ * exists yet, so this is a no-op and schema.ts's own `CREATE TABLE`s take
+ * over from here.
+ */
+export function migrateChatCardGroupColumn(db: Database.Database): void {
+  const tableExists = db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'chat_card'`).get();
+  if (!tableExists) return;
+
+  const columns = new Set((db.pragma('table_info(chat_card)') as TableInfoRow[]).map((column) => column.name));
+  if (columns.has('group_id')) return;
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS chat_group (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    ALTER TABLE chat_card ADD COLUMN group_id INTEGER REFERENCES chat_group(id) ON DELETE SET NULL;
+  `);
+}
+
+/**
+ * Same class of problem as `migrateAppPreferenceDebugExportColumns`: the
+ * persona-writing-style feature added `style` straight into schema.ts's
+ * `persona` table definition, which never alters a `persona` table that
+ * already exists from before this feature shipped.
+ */
+export function migrateAddPersonaStyleColumn(db: Database.Database): void {
+  const tableExists = db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'persona'`).get();
+  if (!tableExists) return;
+
+  const columns = new Set((db.pragma('table_info(persona)') as TableInfoRow[]).map((column) => column.name));
+  if (!columns.has('style')) {
+    db.exec("ALTER TABLE persona ADD COLUMN style TEXT NOT NULL DEFAULT ''");
+  }
+}
+
+export function migrateAppPreferenceWebSearchColumns(db: Database.Database): void {
+  const tableExists = db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'app_preference'`).get();
+  if (!tableExists) return;
+
+  const columns = new Set((db.pragma('table_info(app_preference)') as TableInfoRow[]).map((column) => column.name));
+  if (!columns.has('web_search_enabled')) {
+    db.exec('ALTER TABLE app_preference ADD COLUMN web_search_enabled INTEGER NOT NULL DEFAULT 0');
+  }
+  if (!columns.has('web_search_api_key')) {
+    db.exec('ALTER TABLE app_preference ADD COLUMN web_search_api_key TEXT');
+  }
+}

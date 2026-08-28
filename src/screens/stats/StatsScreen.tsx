@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import styles from './StatsScreen.module.css';
-import { IconAlertCircle, IconArrowLeft, IconButton } from '../../components/ui';
+import { IconAlertCircle, IconArrowLeft, IconButton, LockButton } from '../../components/ui';
 import { avatarGradient } from '../../lib/avatarGradient';
 import { NO_CURRENT_MODEL_CARD_MESSAGE } from '../../../electron/shared/errors';
 import type { ChatCardRecord, ChatStatsRecord, GoalEvaluationResult } from '../../../electron/shared/ipc-types';
@@ -147,6 +147,7 @@ export function StatsScreen({ chatCardId, onBack }: StatsScreenProps) {
           {card?.avatarPath ? <img className={styles.avatarImage} src={card.avatarPath} alt="" /> : card?.name.charAt(0)}
         </div>
         <div className={styles.title}>{card ? `${card.name} · 聊天统计` : '聊天统计'}</div>
+        <LockButton />
       </header>
 
       <main className={styles.main}>

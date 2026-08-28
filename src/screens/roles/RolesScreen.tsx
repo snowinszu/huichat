@@ -5,10 +5,12 @@ import {
   ConfirmDialog,
   IconArrowLeft,
   IconButton,
+  IconCopy,
   IconEdit,
   IconPlus,
   IconTrash,
   Input,
+  LockButton,
   Modal,
   Textarea,
   useToast,
@@ -32,11 +34,14 @@ export function RolesScreen({ onBack }: RolesScreenProps) {
   const [editingId, setEditingId] = useState<number | 'new' | null>(null);
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
+  const [style, setStyle] = useState('');
   const [nameError, setNameError] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
 
   const [deleteTarget, setDeleteTarget] = useState<PersonaWithUsage | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const [duplicatingId, setDuplicatingId] = useState<number | null>(null);
 
   async function refresh() {
     if (!window.api) return;
@@ -66,6 +71,7 @@ export function RolesScreen({ onBack }: RolesScreenProps) {
     setEditingId('new');
     setName('');
     setBio('');
+    setStyle('');
     setNameError(undefined);
   }
 
@@ -73,6 +79,7 @@ export function RolesScreen({ onBack }: RolesScreenProps) {
     setEditingId(persona.id);
     setName(persona.name);
     setBio(persona.bio);
+    setStyle(persona.style);
     setNameError(undefined);
   }
 
@@ -89,10 +96,10 @@ export function RolesScreen({ onBack }: RolesScreenProps) {
     try {
       if (!window.api) throw new Error('当前环境不支持保存（未连接到 Electron 主进程）');
       if (editingId === 'new') {
-        await window.api.persona.create({ name: name.trim(), bio: bio.trim() });
+        await window.api.persona.create({ name: name.trim(), bio: bio.trim(), style: style.trim() });
         showToast('角色已创建', 'success');
       } else if (editingId !== null) {
-        await window.api.persona.update(editingId, { name: name.trim(), bio: bio.trim() });
+        await window.api.persona.update(editingId, { name: name.trim(), bio: bio.trim(), style: style.trim() });
         showToast('角色已保存', 'success');
       }
       await refresh();
@@ -101,6 +108,20 @@ export function RolesScreen({ onBack }: RolesScreenProps) {
       showToast(error_ instanceof Error ? error_.message : '保存失败', 'error');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDuplicate(persona: PersonaWithUsage) {
+    setDuplicatingId(persona.id);
+    try {
+      if (!window.api) throw new Error('当前环境不支持复制（未连接到 Electron 主进程）');
+      await window.api.persona.duplicate(persona.id);
+      showToast('角色已复制', 'success');
+      await refresh();
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : '复制失败', 'error');
+    } finally {
+      setDuplicatingId(null);
     }
   }
 
@@ -130,6 +151,7 @@ export function RolesScreen({ onBack }: RolesScreenProps) {
         <Button size="sm" icon={<IconPlus size={14} />} onClick={openCreate}>
           新建角色
         </Button>
+        <LockButton />
       </header>
 
       <main className={styles.main}>
@@ -170,6 +192,13 @@ export function RolesScreen({ onBack }: RolesScreenProps) {
                 <div className={styles.actions}>
                   <IconButton aria-label={`编辑${persona.name}`} onClick={() => openEdit(persona)}>
                     <IconEdit size={16} />
+                  </IconButton>
+                  <IconButton
+                    aria-label={`复制${persona.name}`}
+                    disabled={duplicatingId === persona.id}
+                    onClick={() => handleDuplicate(persona)}
+                  >
+                    <IconCopy size={16} />
                   </IconButton>
                   <IconButton aria-label={`删除${persona.name}`} danger onClick={() => setDeleteTarget(persona)}>
                     <IconTrash size={16} />
@@ -213,6 +242,13 @@ export function RolesScreen({ onBack }: RolesScreenProps) {
           rows={4}
           value={bio}
           onChange={(event) => setBio(event.target.value)}
+        />
+        <Textarea
+          label="文字风格"
+          placeholder="描述具体的书写习惯，例如：一般不加标点符号、习惯每句话结束都加表情"
+          rows={3}
+          value={style}
+          onChange={(event) => setStyle(event.target.value)}
         />
       </Modal>
 

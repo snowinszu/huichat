@@ -1,0 +1,86 @@
+/*
+ * Fully opaque (unlike Overlay.module.css's translucent/blurred modal
+ * backdrop) and layered above everything else, including Toast (z-index
+ * 1000) — the whole point is that nothing behind it, including a
+ * mid-flight toast, stays visible while locked.
+ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+}
+
+.badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.appName {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 280px;
+}
+
+.unlockButton {
+  width: 100%;
+}
+
+.forgotLink {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  align-self: center;
+}
+
+.forgotLink:hover {
+  color: var(--fg-2);
+  text-decoration: underline;
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+
+.shake {
+  animation: shake var(--duration-slow) 3;
+}

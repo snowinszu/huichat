@@ -17,6 +17,14 @@ CREATE TABLE IF NOT EXISTS persona (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   bio TEXT NOT NULL DEFAULT '',
+  style TEXT NOT NULL DEFAULT '',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS chat_group (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -29,6 +37,7 @@ CREATE TABLE IF NOT EXISTS chat_card (
   long_term_goal TEXT NOT NULL DEFAULT '',
   short_term_goal TEXT NOT NULL DEFAULT '',
   persona_id INTEGER REFERENCES persona(id) ON DELETE SET NULL,
+  group_id INTEGER REFERENCES chat_group(id) ON DELETE SET NULL,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   history_summary TEXT NOT NULL DEFAULT '',
@@ -36,6 +45,7 @@ CREATE TABLE IF NOT EXISTS chat_card (
 );
 
 CREATE INDEX IF NOT EXISTS idx_chat_card_persona_id ON chat_card(persona_id);
+CREATE INDEX IF NOT EXISTS idx_chat_card_group_id ON chat_card(group_id);
 
 CREATE TABLE IF NOT EXISTS llm_model_card (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,11 +67,15 @@ CREATE TABLE IF NOT EXISTS app_preference (
   dark_mode INTEGER NOT NULL DEFAULT 0,
   debug_prompt_export INTEGER NOT NULL DEFAULT 0,
   debug_export_dir TEXT,
+  lock_password_hash TEXT,
+  lock_password_salt TEXT,
+  web_search_enabled INTEGER NOT NULL DEFAULT 0,
+  web_search_api_key TEXT,
   updated_at INTEGER NOT NULL
 );
 
-INSERT OR IGNORE INTO app_preference (id, translate_non_chinese, auto_add_to_history, auto_extract_info, dark_mode, debug_prompt_export, debug_export_dir, updated_at)
-VALUES (1, 1, 0, 1, 0, 0, NULL, 0);
+INSERT OR IGNORE INTO app_preference (id, translate_non_chinese, auto_add_to_history, auto_extract_info, dark_mode, debug_prompt_export, debug_export_dir, web_search_enabled, web_search_api_key, updated_at)
+VALUES (1, 1, 0, 1, 0, 0, NULL, 0, NULL, 0);
 
 CREATE TABLE IF NOT EXISTS message (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

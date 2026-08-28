@@ -66,7 +66,7 @@ test('完整聊天辅助流程：创建角色/卡片 → 粘贴翻译 → 生成
     await window.getByLabel('对方称呼').fill('E2E 小雅');
     await window.getByLabel('对方基本信息').fill('25岁，设计师');
     await window.getByLabel('聊天最终目标').fill('发展成恋爱关系');
-    await window.locator('select').selectOption({ label: 'E2E 真实的我' });
+    await window.getByLabel('以哪个角色聊天').selectOption({ label: 'E2E 真实的我' });
     await window.getByRole('button', { name: '保存', exact: true }).click();
     await expect(window.getByText('聊天对象已创建')).toBeVisible();
 

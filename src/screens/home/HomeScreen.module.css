@@ -93,6 +93,66 @@
   margin-bottom: var(--space-6);
 }
 
+.groupSections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.groupSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.groupSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.groupSectionToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-family: var(--font);
+  /* Touch target: the visible icon/text is smaller, but the click area
+     needs to clear the 44px minimum for mobile-first tap targets. */
+  min-height: 44px;
+}
+
+.groupSectionActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.groupRenameInput {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-family: var(--font);
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-sm);
+  padding: 0 var(--space-1);
+  min-width: 120px;
+}
+
+.groupChevron {
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: transform var(--duration-base) var(--ease);
+}
+
+.groupChevronCollapsed {
+  transform: rotate(-90deg);
+}
+
 .selectRow {
   display: flex;
   gap: var(--space-2);

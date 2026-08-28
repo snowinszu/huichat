@@ -4,14 +4,18 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from '../shared/ipc-types.js';
 import type {
+  AppLockStatus,
   AppPreferenceRecord,
   ChatCardRecord,
   ChatStatsRecord,
   CreateChatCardInput,
+  CreateGroupInput,
   CreateModelCardInput,
   CreatePersonaInput,
   GenerateRepliesInput,
   GoalEvaluationResult,
+  GroupRecord,
+  GroupWithUsage,
   InsertMessageInput,
   MessageRecord,
   ModelCardRecord,
@@ -34,6 +38,7 @@ const api = {
       ipcRenderer.invoke(IPC_CHANNELS.messageListByChatCard, chatCardId),
     translate: (text: string): Promise<string> => ipcRenderer.invoke(IPC_CHANNELS.messageTranslate, text),
     delete: (messageId: number): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.messageDelete, messageId),
+    revert: (messageId: number): Promise<number> => ipcRenderer.invoke(IPC_CHANNELS.messageRevert, messageId),
   },
   chatCard: {
     create: (input: CreateChatCardInput): Promise<ChatCardRecord> => ipcRenderer.invoke(IPC_CHANNELS.chatCardCreate, input),
@@ -66,6 +71,16 @@ const api = {
   debugExport: {
     chooseDirectory: (): Promise<string | null> => ipcRenderer.invoke(IPC_CHANNELS.debugExportChooseDirectory),
   },
+  appLock: {
+    getStatus: (): Promise<AppLockStatus> => ipcRenderer.invoke(IPC_CHANNELS.appLockGetStatus),
+    setPassword: (password: string): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.appLockSetPassword, password),
+    verifyPassword: (password: string): Promise<boolean> => ipcRenderer.invoke(IPC_CHANNELS.appLockVerifyPassword, password),
+    clearPassword: (password: string): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.appLockClearPassword, password),
+    isLocked: (): Promise<boolean> => ipcRenderer.invoke(IPC_CHANNELS.appLockIsLocked),
+    engage: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.appLockEngage),
+    unlock: (password: string): Promise<boolean> => ipcRenderer.invoke(IPC_CHANNELS.appLockUnlock, password),
+    resetData: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.appLockResetData),
+  },
   persona: {
     create: (input: CreatePersonaInput): Promise<PersonaRecord> => ipcRenderer.invoke(IPC_CHANNELS.personaCreate, input),
     get: (id: number): Promise<PersonaRecord | undefined> => ipcRenderer.invoke(IPC_CHANNELS.personaGet, id),
@@ -73,6 +88,13 @@ const api = {
     update: (id: number, patch: UpdatePersonaInput): Promise<PersonaRecord> =>
       ipcRenderer.invoke(IPC_CHANNELS.personaUpdate, id, patch),
     delete: (id: number): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.personaDelete, id),
+    duplicate: (id: number): Promise<PersonaRecord> => ipcRenderer.invoke(IPC_CHANNELS.personaDuplicate, id),
+  },
+  chatGroup: {
+    create: (input: CreateGroupInput): Promise<GroupRecord> => ipcRenderer.invoke(IPC_CHANNELS.chatGroupCreate, input),
+    listWithUsage: (): Promise<GroupWithUsage[]> => ipcRenderer.invoke(IPC_CHANNELS.chatGroupListWithUsage),
+    rename: (id: number, name: string): Promise<GroupRecord> => ipcRenderer.invoke(IPC_CHANNELS.chatGroupRename, id, name),
+    delete: (id: number): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.chatGroupDelete, id),
   },
   avatar: {
     save: (data: Uint8Array): Promise<string> => ipcRenderer.invoke(IPC_CHANNELS.avatarSave, data),

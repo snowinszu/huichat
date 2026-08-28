@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ToastProvider } from './components/ui';
+import { AppLockProvider, ToastProvider } from './components/ui';
 import { HomeScreen } from './screens/home/HomeScreen';
 import { RolesScreen } from './screens/roles/RolesScreen';
 import { ModelsScreen } from './screens/models/ModelsScreen';
@@ -66,7 +66,9 @@ function AppShell() {
 function App() {
   return (
     <ToastProvider>
-      <AppShell />
+      <AppLockProvider>
+        <AppShell />
+      </AppLockProvider>
     </ToastProvider>
   );
 }

@@ -74,6 +74,12 @@
   white-space: nowrap;
 }
 
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .versionInfo {
   text-align: center;
   font-size: var(--text-sm);

@@ -1,12 +1,23 @@
 import { dialog, ipcMain } from 'electron';
 import type Database from 'better-sqlite3';
 import { getDatabase } from '../db/index.js';
-import { insertMessage, listMessagesByChatCard, deleteMessage } from '../db/messageRepository.js';
+import { insertMessage, listMessagesByChatCard, deleteMessage, revertToMessage } from '../db/messageRepository.js';
 import { createChatCard, getChatCard, listChatCards, updateChatCard, deleteChatCard } from '../db/chatCardRepository.js';
 import { computeChatStats } from '../db/chatStatsRepository.js';
 import { getSettings, saveSettings } from '../db/settingsRepository.js';
 import { getAppPreference, updateAppPreference } from '../db/appPreferenceRepository.js';
-import { createPersona, getPersona, listPersonasWithUsage, updatePersona, deletePersona } from '../db/personaRepository.js';
+import { getAppLockStatus, setAppLockPassword, verifyAppLockPassword, clearAppLockPassword } from '../db/appLockRepository.js';
+import { isAppLocked, setAppLocked } from '../appLockState.js';
+import { resetAppData } from '../db/resetRepository.js';
+import {
+  createPersona,
+  getPersona,
+  listPersonasWithUsage,
+  updatePersona,
+  deletePersona,
+  duplicatePersona,
+} from '../db/personaRepository.js';
+import { createGroup, listGroupsWithUsage, renameGroup, deleteGroup } from '../db/groupRepository.js';
 import {
   createModelCard,
   deleteModelCard,
@@ -18,8 +29,10 @@ import {
 import { saveAvatar } from '../avatarStorage.js';
 import { callLlm } from '../llm/client.js';
 import type { DebugExportContext } from '../debugExport.js';
-import { buildReplyPrompt, parseReplies } from '../llm/generateReplies.js';
+import { buildReplyPrompt, parseGenerateRepliesResponse, parseReplies } from '../llm/generateReplies.js';
 import { buildPolishPrompt } from '../llm/polishDraft.js';
+import { searchWeb, formatSearchResults } from '../llm/webSearch.js';
+import { getCachedSearchResults, setCachedSearchResults } from '../llm/searchCache.js';
 import { buildGoalEvaluationPrompt, parseGoalEvaluation } from '../llm/evaluateGoal.js';
 import { maybeExtractInfo } from '../llm/extractInfo.js';
 import { maybeSummarizeHistory } from '../llm/summarizeHistory.js';
@@ -28,6 +41,7 @@ import { NO_CURRENT_MODEL_CARD_MESSAGE } from '../../shared/errors.js';
 import type {
   ChatCardRecord,
   CreateChatCardInput,
+  CreateGroupInput,
   CreatePersonaInput,
   CreateModelCardInput,
   GenerateRepliesInput,
@@ -96,6 +110,7 @@ export function registerIpcHandlers(): void {
     listMessagesByChatCard(getDatabase(), chatCardId),
   );
   ipcMain.handle(IPC_CHANNELS.messageDelete, (_event, messageId: number) => deleteMessage(getDatabase(), messageId));
+  ipcMain.handle(IPC_CHANNELS.messageRevert, (_event, messageId: number) => revertToMessage(getDatabase(), messageId));
   ipcMain.handle(IPC_CHANNELS.messageTranslate, async (_event, text: string) => {
     const db = getDatabase();
     const modelCard = getCurrentModelCard(db);
@@ -134,6 +149,12 @@ export function registerIpcHandlers(): void {
     updatePersona(getDatabase(), id, patch),
   );
   ipcMain.handle(IPC_CHANNELS.personaDelete, (_event, id: number) => deletePersona(getDatabase(), id));
+  ipcMain.handle(IPC_CHANNELS.personaDuplicate, (_event, id: number) => duplicatePersona(getDatabase(), id));
+
+  ipcMain.handle(IPC_CHANNELS.chatGroupCreate, (_event, input: CreateGroupInput) => createGroup(getDatabase(), input));
+  ipcMain.handle(IPC_CHANNELS.chatGroupListWithUsage, () => listGroupsWithUsage(getDatabase()));
+  ipcMain.handle(IPC_CHANNELS.chatGroupRename, (_event, id: number, name: string) => renameGroup(getDatabase(), id, name));
+  ipcMain.handle(IPC_CHANNELS.chatGroupDelete, (_event, id: number) => deleteGroup(getDatabase(), id));
 
   ipcMain.handle(IPC_CHANNELS.modelCardList, () => listModelCards(getDatabase()));
   ipcMain.handle(IPC_CHANNELS.modelCardGetCurrent, () => getCurrentModelCard(getDatabase()));
@@ -160,6 +181,36 @@ export function registerIpcHandlers(): void {
     updateAppPreference(getDatabase(), patch),
   );
 
+  ipcMain.handle(IPC_CHANNELS.appLockGetStatus, () => getAppLockStatus(getDatabase()));
+  ipcMain.handle(IPC_CHANNELS.appLockSetPassword, (_event, password: string) => {
+    if (password.length < 4 || password.length > 20) throw new Error('密码长度需为 4-20 位');
+    setAppLockPassword(getDatabase(), password);
+  });
+  ipcMain.handle(IPC_CHANNELS.appLockVerifyPassword, (_event, password: string) => verifyAppLockPassword(getDatabase(), password));
+  ipcMain.handle(IPC_CHANNELS.appLockClearPassword, (_event, password: string) => {
+    const db = getDatabase();
+    if (!verifyAppLockPassword(db, password)) throw new Error('密码错误');
+    clearAppLockPassword(db);
+  });
+  ipcMain.handle(IPC_CHANNELS.appLockIsLocked, () => isAppLocked());
+  ipcMain.handle(IPC_CHANNELS.appLockEngage, () => {
+    if (!getAppLockStatus(getDatabase()).enabled) throw new Error('尚未设置锁屏密码');
+    setAppLocked(true);
+  });
+  // Returns a boolean rather than throwing — a wrong password here is an
+  // everyday, no-attempt-limit outcome (see PRD non-goals), not an error
+  // condition the way a wrong password is for `appLockClearPassword`.
+  ipcMain.handle(IPC_CHANNELS.appLockUnlock, (_event, password: string) => {
+    const db = getDatabase();
+    const correct = verifyAppLockPassword(db, password);
+    if (correct) setAppLocked(false);
+    return correct;
+  });
+  ipcMain.handle(IPC_CHANNELS.appLockResetData, () => {
+    resetAppData(getDatabase());
+    setAppLocked(false);
+  });
+
   ipcMain.handle(IPC_CHANNELS.debugExportChooseDirectory, async () => {
     const result = await dialog.showOpenDialog({ properties: ['openDirectory'] });
     if (result.canceled || result.filePaths.length === 0) return null;
@@ -185,13 +236,58 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.replyGenerate, async (_event, input: GenerateRepliesInput) => {
     const db = getDatabase();
     const { card, persona, messages, modelCard } = loadChatContext(db, input.chatCardId);
-    const prompt = buildReplyPrompt({ card, persona, messages, tone: input.tone, debugMode: getAppPreference(db).debugPromptExport });
-    const responseText = await callLlm(
-      { provider: modelCard.provider, apiKey: modelCard.apiKey, model: modelCard.model, baseUrl: modelCard.baseUrl ?? undefined },
-      prompt,
-      debugExportContextFor(db, '生成回复'),
-    );
-    return parseReplies(responseText);
+    const preference = getAppPreference(db);
+    const llmConfig = {
+      provider: modelCard.provider,
+      apiKey: modelCard.apiKey,
+      model: modelCard.model,
+      baseUrl: modelCard.baseUrl ?? undefined,
+    };
+    const promptBase = { card, persona, messages, tone: input.tone, debugMode: preference.debugPromptExport };
+
+    const webSearchReady = preference.webSearchEnabled && Boolean(preference.webSearchApiKey);
+    if (!webSearchReady) {
+      const prompt = buildReplyPrompt(promptBase);
+      const responseText = await callLlm(llmConfig, prompt, debugExportContextFor(db, '生成回复'));
+      return parseReplies(responseText);
+    }
+
+    // Phase 1: the model decides, alongside its normal 3-reply generation,
+    // whether this turn needs real-time info — see SEARCH_DECISION_GUIDANCE
+    // in generateReplies.ts. `firstPass.replies` is always populated even
+    // when needsSearch is true, so it doubles as the fallback if search
+    // fails below.
+    const firstPrompt = buildReplyPrompt({ ...promptBase, webSearchEnabled: true });
+    const firstResponseText = await callLlm(llmConfig, firstPrompt, debugExportContextFor(db, '生成回复（判断是否需要联网）'));
+    const firstPass = parseGenerateRepliesResponse(firstResponseText);
+
+    if (!firstPass.needsSearch || !firstPass.searchQuery) {
+      return firstPass.replies;
+    }
+
+    // "重新生成" re-runs this whole handler for the same still-unanswered
+    // message — reuse the search from the previous run instead of hitting
+    // Tavily again for what would be near-identical results.
+    const lastMessageId = messages[messages.length - 1]?.id;
+    const cachedResults = lastMessageId !== undefined ? getCachedSearchResults(input.chatCardId, lastMessageId) : null;
+
+    // preference.webSearchApiKey is non-null here per webSearchReady above.
+    const searchResults =
+      cachedResults ??
+      (await searchWeb(preference.webSearchApiKey as string, firstPass.searchQuery).catch((error: unknown) => {
+        console.error('[web-search] search failed, falling back to first-pass replies', error);
+        return null;
+      }));
+    if (!searchResults || searchResults.length === 0) {
+      return firstPass.replies;
+    }
+    if (!cachedResults && lastMessageId !== undefined) {
+      setCachedSearchResults(input.chatCardId, lastMessageId, searchResults);
+    }
+
+    const secondPrompt = buildReplyPrompt({ ...promptBase, searchResults: formatSearchResults(searchResults) });
+    const secondResponseText = await callLlm(llmConfig, secondPrompt, debugExportContextFor(db, '生成回复（联网搜索后）'));
+    return parseReplies(secondResponseText);
   });
 
   ipcMain.handle(IPC_CHANNELS.replyPolish, async (_event, input: PolishDraftInput) => {

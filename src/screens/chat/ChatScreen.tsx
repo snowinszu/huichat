@@ -9,8 +9,10 @@ import {
   IconButton,
   IconImage,
   IconPlus,
+  IconRefresh,
   IconStar,
   IconTrash,
+  LockButton,
   MessageBubble,
   ReplyCard,
   ToneChip,
@@ -83,6 +85,8 @@ export function ChatScreen({ chatCardId, onBack, onNavigateToModels }: ChatScree
   const [preference, setPreference] = useState<AppPreferenceRecord>(DEFAULT_APP_PREFERENCE);
   const [deleteTarget, setDeleteTarget] = useState<MessageRecord | null>(null);
   const [deletingMessage, setDeletingMessage] = useState(false);
+  const [revertTarget, setRevertTarget] = useState<MessageRecord | null>(null);
+  const [revertingMessage, setRevertingMessage] = useState(false);
   const historyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -227,6 +231,28 @@ export function ChatScreen({ chatCardId, onBack, onNavigateToModels }: ChatScree
       showToast(error instanceof Error ? error.message : '删除消息失败', 'error');
     } finally {
       setDeletingMessage(false);
+    }
+  }
+
+  // Same real-DB-delete reasoning as handleConfirmDeleteMessage — the target
+  // message is kept, everything after it is removed both in SQLite and in
+  // local state, sliced by index rather than trusting the backend's returned
+  // count to know which specific messages to drop from the array.
+  async function handleConfirmRevertMessage() {
+    if (!revertTarget) return;
+    const target = revertTarget;
+    setRevertingMessage(true);
+    try {
+      if (!window.api) throw new Error('当前环境不支持回退（未连接到 Electron 主进程）');
+      const deletedCount = await window.api.message.revert(target.id);
+      const targetIndex = messages.findIndex((message) => message.id === target.id);
+      setMessages((current) => current.filter((_, index) => index <= targetIndex));
+      setRevertTarget(null);
+      showToast(`已回退，删除了 ${deletedCount} 条消息`, 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : '回退失败', 'error');
+    } finally {
+      setRevertingMessage(false);
     }
   }
 
@@ -386,6 +412,13 @@ export function ChatScreen({ chatCardId, onBack, onNavigateToModels }: ChatScree
     );
   }
 
+  // Computed fresh each render from local state rather than trusting a
+  // stale count captured at click time — messages only changes via this
+  // component's own handlers, so this always reflects what's about to be
+  // deleted for real.
+  const revertIndex = revertTarget ? messages.findIndex((message) => message.id === revertTarget.id) : -1;
+  const revertCount = revertIndex >= 0 ? messages.length - 1 - revertIndex : 0;
+
   return (
     <div className={styles.shell}>
       <header className={styles.topbar}>
@@ -420,19 +453,21 @@ export function ChatScreen({ chatCardId, onBack, onNavigateToModels }: ChatScree
             />
           </div>
         </div>
+        <LockButton />
       </header>
 
       <main className={styles.history} ref={historyRef}>
         {messages.length === 0 ? (
           <div className={styles.placeholder}>还没有消息，粘贴对方发来的第一条消息开始吧</div>
         ) : (
-          messages.map((message) => {
+          messages.map((message, index) => {
             // Annotations are only ever created from the "对方消息" input
             // area (there's no self-side equivalent), so they always align
             // with the other person's messages, avatar included — otherwise
             // the dashed independent-bubble style reads as sender-less.
             const isAnnotation = message.role === 'annotation';
             const isSelf = message.role === 'self';
+            const isLastMessage = index === messages.length - 1;
             return (
               <div key={message.id} className={[styles.msgRow, isSelf ? styles.me : styles.them].join(' ')}>
                 {!isSelf && (
@@ -452,8 +487,19 @@ export function ChatScreen({ chatCardId, onBack, onNavigateToModels }: ChatScree
                   {message.translation && <TranslationNote>{message.translation}</TranslationNote>}
                   <span className={styles.msgTime}>{formatMessageTime(message.createdAt)}</span>
                 </div>
+                {!isLastMessage && (
+                  <IconButton
+                    className={styles.msgActionBtn}
+                    size="sm"
+                    variant="surface"
+                    aria-label="回退"
+                    onClick={() => setRevertTarget(message)}
+                  >
+                    <IconRefresh size={13} />
+                  </IconButton>
+                )}
                 <IconButton
-                  className={styles.msgDeleteBtn}
+                  className={styles.msgActionBtn}
                   size="sm"
                   variant="surface"
                   danger
@@ -676,6 +722,18 @@ export function ChatScreen({ chatCardId, onBack, onNavigateToModels }: ChatScree
         onConfirm={handleConfirmDeleteMessage}
       >
         确定删除「{deleteTarget ? messageDeletePreview(deleteTarget) : ''}」吗？删除后无法恢复。
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={revertTarget !== null}
+        tone="danger"
+        title="回退到此消息"
+        confirmLabel="确认回退"
+        confirmLoading={revertingMessage}
+        onClose={() => setRevertTarget(null)}
+        onConfirm={handleConfirmRevertMessage}
+      >
+        将删除此消息之后的 {revertCount} 条消息，此操作无法撤销。确认回退吗？
       </ConfirmDialog>
     </div>
   );

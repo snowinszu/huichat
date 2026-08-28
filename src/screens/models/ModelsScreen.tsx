@@ -9,6 +9,7 @@ import {
   IconPlus,
   IconTrash,
   Input,
+  LockButton,
   Modal,
   PasswordInput,
   Select,
@@ -210,6 +211,7 @@ export function ModelsScreen({ onBack }: ModelsScreenProps) {
         <Button size="sm" icon={<IconPlus size={14} />} onClick={openCreate}>
           新建模型卡片
         </Button>
+        <LockButton />
       </header>
 
       <main className={styles.main}>

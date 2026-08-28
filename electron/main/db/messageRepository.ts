@@ -63,3 +63,28 @@ export function listMessagesByChatCard(db: Database.Database, chatCardId: number
 export function deleteMessage(db: Database.Database, messageId: number): void {
   db.prepare('DELETE FROM message WHERE id = ?').run(messageId);
 }
+
+/**
+ * Deletes every message after `messageId` within the same chat card — the
+ * target message itself is kept. `(created_at, id)` is compared as a tuple
+ * (not just `created_at`) because messages inserted in the same millisecond
+ * still have a deterministic order via `id`, matching the tiebreaker
+ * `listMessagesByChatCard` already sorts by. Idempotent like `deleteMessage`:
+ * an id that's already gone (or never existed) just deletes nothing.
+ */
+export function revertToMessage(db: Database.Database, messageId: number): number {
+  const target = db.prepare('SELECT chat_card_id, created_at FROM message WHERE id = ?').get(messageId) as
+    | { chat_card_id: number; created_at: number }
+    | undefined;
+  if (!target) return 0;
+
+  const result = db
+    .prepare(
+      `DELETE FROM message
+       WHERE chat_card_id = @chatCardId
+         AND (created_at > @createdAt OR (created_at = @createdAt AND id > @id))`,
+    )
+    .run({ chatCardId: target.chat_card_id, createdAt: target.created_at, id: messageId });
+
+  return result.changes;
+}

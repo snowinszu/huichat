@@ -33,6 +33,9 @@ export interface ChatCardRecord {
   // Nullable: deleting a persona sets this to null on every card that
   // referenced it (ON DELETE SET NULL) rather than blocking the delete.
   personaId: number | null;
+  // Nullable: deleting a group sets this to null on every card that
+  // referenced it (ON DELETE SET NULL) rather than blocking the delete.
+  groupId: number | null;
   createdAt: number;
   updatedAt: number;
   // Rolling summary of messages older than the retention window, and the id
@@ -49,6 +52,7 @@ export interface CreateChatCardInput {
   longTermGoal?: string;
   shortTermGoal?: string;
   personaId?: number | null;
+  groupId?: number | null;
 }
 
 export interface UpdateChatCardInput {
@@ -58,6 +62,7 @@ export interface UpdateChatCardInput {
   longTermGoal?: string;
   shortTermGoal?: string;
   personaId?: number | null;
+  groupId?: number | null;
   historySummary?: string;
   summarizedThroughMessageId?: number | null;
 }
@@ -108,6 +113,10 @@ export interface PersonaRecord {
   id: number;
   name: string;
   bio: string;
+  // Concrete writing/speech habits (e.g. "不加标点符号"), kept separate from
+  // `bio` so it can be injected into prompts as its own 【说话习惯】 section —
+  // see promptContext.ts's buildContextSection.
+  style: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -120,11 +129,29 @@ export interface PersonaWithUsage extends PersonaRecord {
 export interface CreatePersonaInput {
   name: string;
   bio?: string;
+  style?: string;
 }
 
 export interface UpdatePersonaInput {
   name?: string;
   bio?: string;
+  style?: string;
+}
+
+export interface GroupRecord {
+  id: number;
+  name: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/** A group plus how many chat cards currently reference it — drives the "N 个聊天对象将变为未分组" delete warning. */
+export interface GroupWithUsage extends GroupRecord {
+  usageCount: number;
+}
+
+export interface CreateGroupInput {
+  name: string;
 }
 
 export type LlmProviderId =
@@ -192,6 +219,8 @@ export interface AppPreferenceRecord {
   darkMode: boolean;
   debugPromptExport: boolean;
   debugExportDir: string | null;
+  webSearchEnabled: boolean;
+  webSearchApiKey: string | null;
   updatedAt: number;
 }
 
@@ -202,6 +231,13 @@ export interface UpdateAppPreferenceInput {
   darkMode?: boolean;
   debugPromptExport?: boolean;
   debugExportDir?: string | null;
+  webSearchEnabled?: boolean;
+  webSearchApiKey?: string | null;
+}
+
+/** Whether an app-lock password is currently set — drives the settings toggle and whether the title-bar lock icon shows at all. */
+export interface AppLockStatus {
+  enabled: boolean;
 }
 
 export const IPC_CHANNELS = {
@@ -209,6 +245,7 @@ export const IPC_CHANNELS = {
   messageListByChatCard: 'message:list-by-chat-card',
   messageTranslate: 'message:translate',
   messageDelete: 'message:delete',
+  messageRevert: 'message:revert',
   chatCardCreate: 'chat-card:create',
   chatCardGet: 'chat-card:get',
   chatCardList: 'chat-card:list',
@@ -222,6 +259,11 @@ export const IPC_CHANNELS = {
   personaListWithUsage: 'persona:list-with-usage',
   personaUpdate: 'persona:update',
   personaDelete: 'persona:delete',
+  personaDuplicate: 'persona:duplicate',
+  chatGroupCreate: 'chat-group:create',
+  chatGroupListWithUsage: 'chat-group:list-with-usage',
+  chatGroupRename: 'chat-group:rename',
+  chatGroupDelete: 'chat-group:delete',
   avatarSave: 'avatar:save',
   replyGenerate: 'reply:generate',
   replyPolish: 'reply:polish',
@@ -236,6 +278,14 @@ export const IPC_CHANNELS = {
   modelCardSetCurrent: 'model-card:set-current',
   appPreferenceGet: 'app-preference:get',
   appPreferenceUpdate: 'app-preference:update',
+  appLockGetStatus: 'app-lock:get-status',
+  appLockSetPassword: 'app-lock:set-password',
+  appLockVerifyPassword: 'app-lock:verify-password',
+  appLockClearPassword: 'app-lock:clear-password',
+  appLockIsLocked: 'app-lock:is-locked',
+  appLockEngage: 'app-lock:engage',
+  appLockUnlock: 'app-lock:unlock',
+  appLockResetData: 'app-lock:reset-data',
   debugExportChooseDirectory: 'debug-export:choose-directory',
   chatStatsGet: 'chat-stats:get',
   chatStatsEvaluateGoal: 'chat-stats:evaluate-goal',

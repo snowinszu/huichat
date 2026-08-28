@@ -4,6 +4,7 @@ import { app, BrowserWindow } from 'electron';
 import { initDatabase } from './db/index.js';
 import { registerIpcHandlers } from './ipc/register.js';
 import { registerAvatarProtocol } from './avatarStorage.js';
+import { isAppLocked } from './appLockState.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -49,6 +50,21 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(path.join(RENDERER_DIST, 'index.html'));
   }
+
+  // The lock overlay (rendered in the renderer, see AppLockProvider) covers
+  // the content visually and makes it `inert`, but neither stops a reload —
+  // a fresh page load would boot right past the overlay into unlocked
+  // content. Reload/devtools are the only shortcuts that can do that, so
+  // they're the only ones blocked here while locked; other shortcuts (copy,
+  // zoom, etc.) can't reach the underlying content since it's `inert`.
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (!isAppLocked() || input.type !== 'keyDown') return;
+    const key = input.key.toLowerCase();
+    const withModifier = input.meta || input.control;
+    const isReload = (withModifier && key === 'r') || key === 'f5';
+    const isDevTools = (withModifier && input.shift && key === 'i') || (withModifier && input.alt && key === 'i') || key === 'f12';
+    if (isReload || isDevTools) event.preventDefault();
+  });
 }
 
 app.whenReady().then(() => {

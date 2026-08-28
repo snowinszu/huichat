@@ -38,6 +38,7 @@
 .title {
   font-size: var(--text-md);
   font-weight: 700;
+  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

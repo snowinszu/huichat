@@ -2,7 +2,15 @@ import path from 'node:path';
 import { app } from 'electron';
 import Database from 'better-sqlite3';
 import { SCHEMA_SQL } from './schema.js';
-import { migrateMessageCascadeDelete, migrateAppPreferenceDebugExportColumns, migrateChatCardHistorySummaryColumns } from './migrations.js';
+import {
+  migrateMessageCascadeDelete,
+  migrateAppPreferenceDebugExportColumns,
+  migrateChatCardHistorySummaryColumns,
+  migrateAppPreferenceLockColumns,
+  migrateAppPreferenceWebSearchColumns,
+  migrateChatCardGroupColumn,
+  migrateAddPersonaStyleColumn,
+} from './migrations.js';
 
 let db: Database.Database | null = null;
 
@@ -29,6 +37,10 @@ export function initDatabase(): Database.Database {
   migrateMessageCascadeDelete(db);
   migrateAppPreferenceDebugExportColumns(db);
   migrateChatCardHistorySummaryColumns(db);
+  migrateAppPreferenceLockColumns(db);
+  migrateAppPreferenceWebSearchColumns(db);
+  migrateChatCardGroupColumn(db);
+  migrateAddPersonaStyleColumn(db);
   db.exec(SCHEMA_SQL);
 
   return db;

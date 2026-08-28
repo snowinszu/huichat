@@ -14,4 +14,7 @@ export * from './ConfirmDialog/ConfirmDialog';
 export * from './Toast/Toast';
 export * from './Toast/ToastProvider';
 export * from './Toast/useToast';
+export * from './AppLock/AppLockProvider';
+export * from './AppLock/useAppLock';
+export * from './AppLock/LockButton';
 export * from './icons';
