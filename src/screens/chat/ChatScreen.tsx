@@ -538,7 +538,9 @@ export function ChatScreen({ chatCardId, onBack, onNavigateToModels }: ChatScree
                 el.style.height = `${Math.min(el.scrollHeight, 100)}px`;
               }}
               onKeyDown={(event) => {
-                if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+                // Enter submits; Shift+Enter still inserts a newline for
+                // pasted multi-line messages.
+                if (event.key === 'Enter' && !event.shiftKey) {
                   event.preventDefault();
                   void handleAddMessage();
                 }

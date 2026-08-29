@@ -1,6 +1,17 @@
 appId: com.huichat.app
 productName: 会聊
 
+# electron-builder's default artifact filename is `${productName}-${version}-${arch}.${ext}`.
+# electron-builder itself doesn't mangle "会聊" in that filename (sanitize-filename
+# only strips characters illegal on a filesystem, not CJK text) — but GitHub does:
+# its Releases API renames any asset filename containing non-alphanumeric characters
+# when the file is uploaded, silently dropping "会聊" and leaving a stray leading
+# hyphen in the browser_download_url (e.g. "-0.2.0-universal.dmg"). Using the
+# ASCII package name here instead keeps the download link's filename stable and
+# matching what's actually served; `productName` above is untouched, so the app's
+# Dock/Applications/window-title name still shows "会聊".
+artifactName: "${name}-${version}-${arch}.${ext}"
+
 directories:
   output: release
 

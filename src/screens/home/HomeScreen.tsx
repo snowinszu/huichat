@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './HomeScreen.module.css';
 import {
   AddContactCard,
@@ -9,8 +9,10 @@ import {
   ContactCardGrid,
   IconButton,
   IconChevronDown,
+  IconClose,
   IconEdit,
   IconPlus,
+  IconSearch,
   IconTrash,
   Input,
   LockButton,
@@ -83,6 +85,13 @@ export function HomeScreen({
   const [deleteTarget, setDeleteTarget] = useState<ChatCardRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  // Leading/trailing whitespace shouldn't count as an active search — a
+  // stray space shouldn't hide the whole roster.
+  const trimmedQuery = searchQuery.trim();
+  const isSearching = trimmedQuery.length > 0;
+
   // Which group sections are collapsed, keyed by group id ('ungrouped' for
   // the catch-all bucket) — session-only per FR-6/US-003, never persisted.
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
@@ -118,6 +127,15 @@ export function HomeScreen({
     if (ungrouped.length > 0) sections.push({ key: 'ungrouped', name: '未分组', cards: ungrouped, group: null });
     return sections;
   }, [groups, cards]);
+
+  // Search filters purely on the already-loaded `cards` in memory — no IPC
+  // round trip needed for something this small. Matching is against name
+  // only, per the PRD's "昵称匹配" scope.
+  const filteredCards = useMemo(() => {
+    if (!isSearching) return cards;
+    const needle = trimmedQuery.toLowerCase();
+    return cards.filter((card) => card.name.toLowerCase().includes(needle));
+  }, [cards, isSearching, trimmedQuery]);
 
   function toggleSection(key: string) {
     setCollapsedSections((current) => {
@@ -457,11 +475,40 @@ export function HomeScreen({
             <span className={styles.sectionTitle}>聊天对象</span>
             {cards.length > 0 && <span className={styles.sectionCount}>{cards.length} 位</span>}
           </div>
-          {groupSections.length > 0 && (
-            <Button size="sm" icon={<IconPlus size={14} />} onClick={openCreate}>
-              新建聊天对象
-            </Button>
-          )}
+          <div className={styles.headerActions}>
+            {cards.length > 0 && (
+              <div className={styles.searchWrap}>
+                <IconSearch size={16} className={styles.searchIcon} />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  className={styles.searchInput}
+                  placeholder="搜索昵称"
+                  aria-label="搜索聊天对象昵称"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className={styles.searchClearBtn}
+                    aria-label="清空搜索"
+                    onClick={() => {
+                      setSearchQuery('');
+                      searchInputRef.current?.focus();
+                    }}
+                  >
+                    <IconClose size={14} />
+                  </button>
+                )}
+              </div>
+            )}
+            {groupSections.length > 0 && (
+              <Button size="sm" icon={<IconPlus size={14} />} onClick={openCreate}>
+                新建聊天对象
+              </Button>
+            )}
+          </div>
         </div>
 
         {loaded && cards.length === 0 ? (
@@ -477,6 +524,18 @@ export function HomeScreen({
               新建第一个聊天对象
             </Button>
           </div>
+        ) : isSearching ? (
+          filteredCards.length === 0 ? (
+            <div className={styles.empty}>
+              <div className={styles.emptyIcon}>
+                <IconSearch size={28} />
+              </div>
+              <div className={styles.emptyTitle}>未找到匹配的聊天对象</div>
+              <div className={styles.emptySub}>换一个昵称关键词试试，或清空搜索框查看全部对象。</div>
+            </div>
+          ) : (
+            <ContactCardGrid>{filteredCards.map(renderContactCard)}</ContactCardGrid>
+          )
         ) : groupSections.length === 0 ? (
           <ContactCardGrid>
             {cards.map(renderContactCard)}
